@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Merchant {
+  id        Int      @id @default(autoincrement())
+  shopName  String
+  ownerName String
+  gstNumber String   @unique
+  email     String   @unique
+  phone     String
+  password  String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  orders      Order[]
+creditNotes CreditNote[]
+}
+
+model Admin {
+
+  id        Int      @id @default(autoincrement())
+
+  name      String
+
+  email     String   @unique
+
+  password  String
+
+  createdAt DateTime @default(now())
+
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  product   String   @unique
+  category  String
+  stock     Int
+  unit      String
+  price     Float
+  gst       Float
+  hsn       String
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+
+  id               Int       @id @default(autoincrement())
+
+  invoice          String    @unique
+
+  merchantId       Int
+  merchant         Merchant  @relation(fields: [merchantId], references: [id])
+
+  subtotal         Float
+  gst              Float
+  grandTotal       Float
+
+  discountPercent  Float     @default(0)
+  discountAmount   Float     @default(0)
+  taxableAmount Float @default(0)
+
+  status           String    @default("Pending")
+  paymentStatus    String    @default("Pending")
+
+  shippingAddress String @default("")
+  state          String @default("Karnataka")
+placeOfSupply  String @default("Karnataka")
+contactPerson String @default("")
+phone String @default("")
+remarks String @default("")
+deliveryNote       String @default("")
+supplierRef        String @default("")
+otherReference     String @default("")
+dispatchDocumentNo String @default("")
+termsOfDelivery    String @default("")
+deliveryPartner String @default("")
+vehicleNumber   String @default("")
+
+  createdAt        DateTime  @default(now())
+
+  items            OrderItem[]
+  
+dispatchDate    DateTime?
+expectedDate    DateTime?
+deliveredDate   DateTime?
+}
+
+model OrderItem {
+
+  id         Int @id @default(autoincrement())
+
+  orderId    Int
+
+  order      Order @relation(fields:[orderId], references:[id])
+
+  product    String
+
+  quantity   Int
+
+  rate       Float
+
+  gst        Float
+
+  amount     Float
+
+}
+
+model CreditNote {
+
+  id          Int       @id @default(autoincrement())
+
+  orderId     Int       @unique
+
+  merchantId  Int
+
+  invoice      String
+
+  amount       Float
+
+  paidAmount   Float     @default(0)
+
+  balance      Float
+
+  dueDate      DateTime
+
+  status        String    @default("Pending")
+
+  createdAt     DateTime  @default(now())
+
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+
+}
+
+model Notification {
+
+  id          Int      @id @default(autoincrement())
+
+  title       String
+
+  message     String
+
+  role        String
+
+  merchantId  Int?
+
+  read        Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+
+}

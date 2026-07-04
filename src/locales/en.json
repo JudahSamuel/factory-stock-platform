@@ -1,0 +1,76 @@
+{
+  "welcome": "Welcome",
+  "welcomeAdmin": "Welcome Admin 👋",
+  "dashboardSubtitle": "Monitor inventory, orders, analytics and merchant credits from a single dashboard.",
+
+  "erp": "Enterprise Resource Planning",
+  "subtitle": "Smart Inventory, Billing & Distribution Platform",
+
+  "merchantPortal": "Merchant Portal",
+  "adminPortal": "Admin Portal",
+
+  "merchantLogin": "Merchant Login",
+  "adminLogin": "Admin Login",
+
+  "register": "Register",
+  "registering": "Registering...",
+  "login": "Login",
+  "logout": "Logout",
+
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+
+  "shopName": "Shop Name",
+  "ownerName": "Owner Name",
+  "gstNumber": "GST Number",
+  "phone": "Phone Number",
+
+  "dashboard": "Dashboard",
+  "inventory": "Inventory",
+  "orders": "Orders",
+  "analytics": "Analytics",
+  "creditNotes": "Credit Notes",
+  "merchantApprovals": "Merchant Approvals",
+
+  "inventoryDesc": "Manage stock levels and products.",
+  "ordersDesc": "Approve and reject merchant orders.",
+  "merchantApprovalDesc": "Approve or reject newly registered merchants.",
+  "analyticsDesc": "View business insights and charts.",
+  "creditNotesDesc": "Manage outstanding merchant payments.",
+
+  "products": "Products",
+  "stock": "Stock",
+  "price": "Price",
+  "category": "Category",
+
+  "approve": "Approve",
+  "reject": "Reject",
+
+  "pending": "Pending",
+  "approved": "Approved",
+  "paid": "Paid",
+  "unpaid": "Unpaid",
+
+  "invoice": "Invoice",
+  "invoiceNo": "Invoice No",
+  "paymentStatus": "Payment Status",
+
+  "deliveryPartner": "Delivery Partner",
+  "vehicleNumber": "Vehicle Number",
+  "dispatchDate": "Dispatch Date",
+  "expectedDelivery": "Expected Delivery",
+
+  "totalProducts": "Total Products",
+  "totalMerchants": "Total Merchants",
+  "totalOrders": "Orders",
+  "revenue": "Revenue",
+  "pendingOrders": "Pending Orders",
+  "deliveredOrders": "Delivered Orders",
+  "inventoryValue": "Inventory Value",
+
+  "newMerchant": "New Merchant?",
+
+  "footer1": "Real-Time Inventory • GST Billing • Order Management",
+  "footer2": "Powered by Lasya Enterprises"
+}

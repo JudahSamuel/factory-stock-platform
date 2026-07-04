@@ -1,11 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import AnimatedPage from "../components/AnimatedPage";
+import AnimatedCard from "../components/AnimatedCard";
+import AnimatedButton from "../components/AnimatedButton";
 import * as XLSX from "xlsx";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "../firebase/config";
+import {
+
+getProducts,
+
+uploadProducts
+
+} from "../api/product";
 
 export default function FactoryDashboard() {
   const [file, setFile] = useState(null);
+  const [inventory, setInventory] = useState([]);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+
+    loadProducts();
+
+}, []);
+
+const loadProducts = async () => {
+
+    try {
+
+        const res = await getProducts();
+
+        setInventory(res.data);
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+
+};
 
   const handleUpload = async () => {
     try {
@@ -26,23 +58,27 @@ export default function FactoryDashboard() {
       const rows =
         XLSX.utils.sheet_to_json(sheet);
 
-      console.log("Excel Data:", rows);
+      const products = rows.map(row => ({
 
-      for (const row of rows) {
-        const productName = row.Product;
+    product: row.Product,
 
-        if (!productName) continue;
+    category: row.Category || "",
 
-        await setDoc(
-          doc(db, "inventory", productName),
-          {
-            product: row.Product,
-            stock: Number(row.Stock) || 0,
-            price: Number(row.Price) || 0,
-            updatedAt: new Date().toISOString()
-          }
-        );
-      }
+    stock: Number(row.Stock) || 0,
+
+    unit: row.Unit || "",
+
+    price: Number(row.Price) || 0,
+
+    gst: Number(row.GST) || 0,
+
+    hsn: String(row.HSN || "")
+
+}));
+
+await uploadProducts(products);
+
+await loadProducts();
 
       alert("Inventory uploaded successfully!");
 
@@ -52,85 +88,231 @@ export default function FactoryDashboard() {
     } catch (error) {
       console.error(error);
       alert("Upload failed");
-
       setUploading(false);
     }
   };
 
-  return (
-    <div
-      style={{
-        padding: "40px",
-        fontFamily: "Arial"
-      }}
-    >
-      <h1>Factory Dashboard</h1>
+  const totalProducts = inventory.length;
 
-      <p>
-        Upload inventory Excel sheet
-      </p>
-
-      <input
-        type="file"
-        accept=".xlsx,.xls"
-        onChange={(e) =>
-          setFile(e.target.files[0])
-        }
-      />
-
-      <br />
-      <br />
-
-      <button
-        onClick={handleUpload}
-        disabled={uploading}
-        style={{
-          padding: "10px 20px",
-          cursor: "pointer"
-        }}
-      >
-        {uploading
-          ? "Uploading..."
-          : "Upload Excel"}
-      </button>
-
-      <br />
-      <br />
-
-      <h3>Required Excel Format</h3>
-
-      <table
-        border="1"
-        cellPadding="10"
-      >
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Stock</th>
-            <th>Price</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr>
-            <td>Plastic</td>
-            <td>500</td>
-            <td>20</td>
-          </tr>
-
-          <tr>
-            <td>Metal</td>
-            <td>300</td>
-            <td>35</td>
-          </tr>
-
-          <tr>
-            <td>Paper</td>
-            <td>700</td>
-            <td>15</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  const totalStock = inventory.reduce(
+    (sum, item) => sum + (item.stock || 0),
+    0
   );
+
+  const inventoryValue = inventory.reduce(
+    (sum, item) =>
+      sum + ((item.stock || 0) * (item.price || 0)),
+    0
+  );
+
+  return (
+  <AnimatedPage>
+
+      <div className="min-h-screen bg-slate-100 p-8">
+
+
+      {/* Header */}
+
+      <div className="flex justify-between items-center mb-8">
+
+        <h1 className="text-4xl font-bold tracking-tight">
+          <p className="text-gray-500 mt-1">
+Manage inventory, stock uploads and analytics.
+</p>
+          Factory Dashboard
+        </h1>
+
+        
+
+      </div>
+
+      {/* Analytics Cards */}
+
+      <div className="grid md:grid-cols-3 gap-6 mb-8">
+
+<AnimatedCard index={0}>
+<div className="bg-blue-600 text-white p-6 rounded-2xl shadow-lg">
+
+<h3 className="text-lg font-semibold">
+Total Products
+</h3>
+
+<p className="text-4xl font-bold mt-3">
+{totalProducts}
+</p>
+
+</div>
+</AnimatedCard>
+
+<AnimatedCard index={1}>
+<div className="bg-green-600 text-white p-6 rounded-2xl shadow-lg">
+
+<h3 className="text-lg font-semibold">
+Total Stock
+</h3>
+
+<p className="text-4xl font-bold mt-3">
+{totalStock}
+</p>
+
+</div>
+</AnimatedCard>
+
+<AnimatedCard index={2}>
+<div className="bg-purple-600 text-white p-6 rounded-2xl shadow-lg">
+
+<h3 className="text-lg font-semibold">
+Inventory Value
+</h3>
+
+<p className="text-4xl font-bold mt-3">
+₹{inventoryValue.toLocaleString()}
+</p>
+
+</div>
+</AnimatedCard>
+
+</div>
+
+      {/* Upload Section */}
+
+      <AnimatedCard index={3}>
+
+<div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+
+        <h2 className="text-2xl font-semibold mb-4">
+          Upload Inventory Excel
+        </h2>
+
+        <input
+    type="file"
+    accept=".xlsx,.xls"
+    onChange={(e) => setFile(e.target.files[0])}
+    className="
+        block
+        w-full
+        max-w-md
+        text-sm
+        text-gray-600
+        file:mr-4
+        file:py-2
+        file:px-4
+        file:rounded-lg
+        file:border-0
+        file:bg-blue-600
+        file:text-white
+        file:font-medium
+        hover:file:bg-blue-700
+        cursor-pointer
+    "
+/>
+        <br />
+
+        <AnimatedButton
+    onClick={handleUpload}
+          disabled={uploading}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+        >
+          {uploading
+            ? "Uploading..."
+            : "Upload Excel"}
+        </AnimatedButton>
+
+      </div>
+      </AnimatedCard>
+
+      {/* Inventory Table */}
+
+      <AnimatedCard index={4}>
+
+<div className="bg-white rounded-xl shadow-lg overflow-hidden">
+
+        <div className="p-5 border-b">
+
+          <h2 className="text-2xl font-semibold">
+            Current Inventory
+          </h2>
+
+        </div>
+        
+
+        <table className="w-full">
+
+          <thead>
+
+            <tr className="bg-gray-100">
+
+              <th className="p-4 text-left">
+                Product
+              </th>
+
+              <th className="p-4 text-left">
+                Category
+              </th>
+
+              <th className="p-4 text-left">
+                Stock
+              </th>
+
+              <th className="p-4 text-left">
+                Unit
+              </th>
+
+              <th className="p-4 text-left">
+                Price
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {inventory.map((item) => (
+
+              <tr
+key={item.id}
+className="
+border-t
+hover:bg-blue-50
+transition-all
+duration-300
+"
+>
+
+                <td className="p-4">
+                  {item.product}
+                </td>
+
+                <td className="p-4">
+                  {item.category}
+                </td>
+
+                <td className="p-4">
+                  {item.stock}
+                </td>
+
+                <td className="p-4">
+                  {item.unit}
+                </td>
+
+                <td className="p-4">
+                  ₹{item.price}
+                </td>
+
+              </tr>
+
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </div>
+      </AnimatedCard>
+
+        </div>
+
+</AnimatedPage>
+);
 }
