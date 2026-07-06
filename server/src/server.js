@@ -16,15 +16,20 @@ dotenv.config();
 const app = express();
 
 app.use(
-    cors({
-        origin: [
-            "http://localhost:5173",
-            "https://factory-stock-platform-ntv2owugh-judahsamuel1234-4849s-projects.vercel.app"
-        ],
-        credentials: true,
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"]
-    })
+  cors({
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        origin.includes("vercel.app") ||
+        origin === "http://localhost:5173"
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
 );
 app.use(express.json());
 app.use("/api/auth", authRoutes);
