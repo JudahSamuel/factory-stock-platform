@@ -6,7 +6,9 @@ import {
 
     getMerchantCreditNotes,
 
-    markCreditPaid
+    markCreditPaid,
+
+    createCreditNote
 
 } from "../controllers/credit.controller.js";
 
@@ -17,5 +19,7 @@ router.get("/", getCreditNotes);
 router.get("/merchant/:id", getMerchantCreditNotes);
 
 router.put("/:id/pay", markCreditPaid);
+
+router.post("/create/:id", createCreditNote);
 
 export default router;

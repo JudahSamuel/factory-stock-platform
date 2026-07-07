@@ -77,17 +77,19 @@ remarks: shippingDetails.termsOfDelivery,
 
 items:{
 
-create:items.map(item=>({
+create: items.map(item => ({
 
-product:item.product,
+    product: item.product,
 
-quantity:item.quantity,
+    hsn: item.hsn,
 
-rate:item.rate,
+    quantity: item.quantity,
 
-gst:item.gstRate,
+    rate: item.rate,
 
-amount:item.quantity*item.rate
+    gst: item.gstRate,
+
+    amount: item.quantity * item.rate
 
 }))
 
