@@ -77,117 +77,82 @@ export const getMerchantCreditNotes = async (req, res) => {
 };
 
 export const createCreditNote = async (req, res) => {
-
     try {
-
         const orderId = Number(req.params.id);
 
+        console.log("=================================");
+        console.log("Requested Order ID:", orderId);
+
         const order = await prisma.order.findUnique({
-
             where: {
-
                 id: orderId
-
             }
-
         });
 
+        console.log("Order Found:", order);
+
         if (!order) {
-
             return res.status(404).json({
-
-                message: "Order not found"
-
+                message: "Order not found",
+                orderId
             });
-
         }
 
         const existing = await prisma.creditNote.findUnique({
-
             where: {
-
                 orderId
-
             }
-
         });
 
+        console.log("Existing Credit Note:", existing);
+
         if (existing) {
-
             return res.status(400).json({
-
-                message: "Credit Note already exists"
-
+                message: "Credit Note already exists",
+                creditNote: existing
             });
-
         }
 
         const dueDate = new Date();
-
         dueDate.setDate(dueDate.getDate() + 30);
 
         const credit = await prisma.creditNote.create({
-
             data: {
-
                 orderId: order.id,
-
                 merchantId: order.merchantId,
-
                 invoice: order.invoice,
-
                 amount: order.grandTotal,
-
                 paidAmount: 0,
-
                 balance: order.grandTotal,
-
                 dueDate,
-
                 status: "Pending"
-
             }
-
         });
 
         await prisma.order.update({
-
             where: {
-
                 id: order.id
-
             },
-
             data: {
-
                 paymentStatus: "Credit"
-
             }
-
         });
+
+        console.log("Credit Note Created Successfully");
 
         res.json({
-
             message: "Credit Note Created",
-
             credit
-
         });
 
-    }
-
-    catch (err) {
-
+    } catch (err) {
+        console.log("CREATE CREDIT ERROR");
         console.log(err);
 
         res.status(500).json({
-
             message: err.message
-
         });
-
     }
-
 };
 
 export const markCreditPaid = async (req, res) => {
