@@ -1,11 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import splash from "../assets/splash.mp4";
+
+import splashDesktop from "../assets/splash-desktop.mp4";
+import splashMobile from "../assets/splash-mobile.mp4";
 
 export default function SplashScreen({ onFinish }) {
 
     const videoRef = useRef(null);
     const [fadeOut, setFadeOut] = useState(false);
+
+    // Detect mobile devices
+    const isMobile =
+    window.matchMedia("(max-width: 768px)").matches ||
+    window.matchMedia("(orientation: portrait)").matches;
+    const splashVideo = isMobile
+        ? splashMobile
+        : splashDesktop;
 
     useEffect(() => {
 
@@ -38,28 +48,39 @@ export default function SplashScreen({ onFinish }) {
     }, [onFinish]);
 
     return (
-    <AnimatePresence>
-        {!fadeOut && (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8 }}
-                className="fixed inset-0 z-[99999] bg-black flex items-center justify-center"
-            >
-                <video
-                    ref={videoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    preload="auto"
-                    className="w-full h-full object-contain"
+
+        <AnimatePresence>
+
+            {!fadeOut && (
+
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="fixed inset-0 z-[99999] bg-black flex items-center justify-center"
                 >
-                    <source src={splash} type="video/mp4" />
-                </video>
-            </motion.div>
-        )}
-    </AnimatePresence>
-);
+
+                    <video
+                        ref={videoRef}
+                        autoPlay
+                        muted
+                        playsInline
+                        preload="auto"
+                        className="w-full h-full object-contain bg-black"
+                    >
+                        <source
+                            src={splashVideo}
+                            type="video/mp4"
+                        />
+                    </video>
+
+                </motion.div>
+
+            )}
+
+        </AnimatePresence>
+
+    );
 
 }
