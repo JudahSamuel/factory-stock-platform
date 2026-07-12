@@ -1,7 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+
+import PageTransition from "./components/PageTransition";
 
 import Home from "./pages/Home";
-
 import FactoryLogin from "./pages/FactoryLogin";
 import MerchantLogin from "./pages/MerchantLogin";
 import AdminLogin from "./pages/AdminLogin";
@@ -9,6 +12,7 @@ import Deliveries from "./pages/Deliveries";
 import MerchantProfile from "./pages/MerchantProfile";
 import MerchantRegister from "./pages/MerchantRegister";
 import MerchantApprovals from "./pages/MerchantApprovals";
+import SplashScreen from "./pages/SplashScreen";
 
 import FactoryDashboard from "./pages/FactoryDashboard";
 import MerchantDashboard from "./pages/MerchantDashboard";
@@ -24,166 +28,342 @@ import MyOrders from "./pages/MyOrders";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import ProtectedMerchantRoute from "./components/ProtectedMerchantRoute";
 
-function App() {
+function AnimatedRoutes() {
+
+    const location = useLocation();
+
+    const Animated = (element) => (
+
+        <PageTransition>
+
+            {element}
+
+        </PageTransition>
+
+    );
 
     return (
 
-        <BrowserRouter>
+        <AnimatePresence mode="wait">
 
-            <Routes>
+            <Routes location={location} key={location.pathname}>
 
                 {/* Public */}
 
-                <Route
-                    path="/"
-                    element={<Home />}
-                />
+                <Route path="/" element={Animated(<Home />)} />
 
-                <Route
-                    path="/factory-login"
-                    element={<FactoryLogin />}
-                />
+                <Route path="/factory-login" element={Animated(<FactoryLogin />)} />
 
-                <Route
-                    path="/merchant-login"
-                    element={<MerchantLogin />}
-                />
+                <Route path="/merchant-login" element={Animated(<MerchantLogin />)} />
 
-                <Route
-                    path="/admin-login"
-                    element={<AdminLogin />}
-                />
+                <Route path="/admin-login" element={Animated(<AdminLogin />)} />
 
-                <Route
-                    path="/merchant-register"
-                    element={<MerchantRegister />}
-                />
+                <Route path="/merchant-register" element={Animated(<MerchantRegister />)} />
 
                 {/* Admin */}
 
                 <Route
+
                     path="/admin-dashboard"
+
                     element={
-                        <ProtectedAdminRoute>
-                            <AdminDashboard />
-                        </ProtectedAdminRoute>
+
+                        Animated(
+
+                            <ProtectedAdminRoute>
+
+                                <AdminDashboard />
+
+                            </ProtectedAdminRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/factory-dashboard"
+
                     element={
-                        <ProtectedAdminRoute>
-                            <FactoryDashboard />
-                        </ProtectedAdminRoute>
+
+                        Animated(
+
+                            <ProtectedAdminRoute>
+
+                                <FactoryDashboard />
+
+                            </ProtectedAdminRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/admin-orders"
+
                     element={
-                        <ProtectedAdminRoute>
-                            <AdminOrders />
-                        </ProtectedAdminRoute>
+
+                        Animated(
+
+                            <ProtectedAdminRoute>
+
+                                <AdminOrders />
+
+                            </ProtectedAdminRoute>
+
+                        )
+
                     }
+
                 />
 
+                
+
                 <Route
+
                     path="/merchant-approvals"
+
                     element={
-                        <ProtectedAdminRoute>
-                            <MerchantApprovals />
-                        </ProtectedAdminRoute>
+
+                        Animated(
+
+                            <ProtectedAdminRoute>
+
+                                <MerchantApprovals />
+
+                            </ProtectedAdminRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/analytics"
+
                     element={
-                        <ProtectedAdminRoute>
-                            <Analytics />
-                        </ProtectedAdminRoute>
+
+                        Animated(
+
+                            <ProtectedAdminRoute>
+
+                                <Analytics />
+
+                            </ProtectedAdminRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/credit-notes"
+
                     element={
-                        <ProtectedAdminRoute>
-                            <CreditNotes />
-                        </ProtectedAdminRoute>
+
+                        Animated(
+
+                            <ProtectedAdminRoute>
+
+                                <CreditNotes />
+
+                            </ProtectedAdminRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/deliveries"
+
                     element={
-                        <ProtectedAdminRoute>
-                            <Deliveries />
-                        </ProtectedAdminRoute>
+
+                        Animated(
+
+                            <ProtectedAdminRoute>
+
+                                <Deliveries />
+
+                            </ProtectedAdminRoute>
+
+                        )
+
                     }
+
                 />
 
                 {/* Merchant */}
 
                 <Route
+
                     path="/merchant-dashboard"
+
                     element={
-                        <ProtectedMerchantRoute>
-                            <MerchantDashboard />
-                        </ProtectedMerchantRoute>
+
+                        Animated(
+
+                            <ProtectedMerchantRoute>
+
+                                <MerchantDashboard />
+
+                            </ProtectedMerchantRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/checkout"
+
                     element={
-                        <ProtectedMerchantRoute>
-                            <Checkout />
-                        </ProtectedMerchantRoute>
+
+                        Animated(
+
+                            <ProtectedMerchantRoute>
+
+                                <Checkout />
+
+                            </ProtectedMerchantRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/merchant-profile"
+
                     element={
-                        <ProtectedMerchantRoute>
-                            <MerchantProfile />
-                        </ProtectedMerchantRoute>
+
+                        Animated(
+
+                            <ProtectedMerchantRoute>
+
+                                <MerchantProfile />
+
+                            </ProtectedMerchantRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/my-orders"
+
                     element={
-                        <ProtectedMerchantRoute>
-                            <MyOrders />
-                        </ProtectedMerchantRoute>
+
+                        Animated(
+
+                            <ProtectedMerchantRoute>
+
+                                <MyOrders />
+
+                            </ProtectedMerchantRoute>
+
+                        )
+
                     }
+
                 />
 
                 <Route
+
                     path="/invoice/:id"
+
                     element={
-                        <ProtectedMerchantRoute>
-                            <InvoicePreview />
-                        </ProtectedMerchantRoute>
+
+                        Animated(
+
+                            <ProtectedMerchantRoute>
+
+                                <InvoicePreview />
+
+                            </ProtectedMerchantRoute>
+
+                        )
+
                     }
+
                 />
 
-                {/* Other */}
-
                 <Route
+
                     path="/orders"
-                    element={<OrdersDashboard />}
+
+                    element={Animated(<OrdersDashboard />)}
+
                 />
 
             </Routes>
+
+        </AnimatePresence>
+
+    );
+
+}
+
+export default function App() {
+
+    const [showSplash, setShowSplash] = useState(true);
+
+    return (
+
+        <BrowserRouter>
+
+            <AnimatePresence mode="wait">
+
+                {
+
+                    showSplash ?
+
+                    (
+
+                        <SplashScreen
+
+                            onFinish={() =>
+
+                                setShowSplash(false)
+
+                            }
+
+                        />
+
+                    )
+
+                    :
+
+                    (
+
+                        <AnimatedRoutes />
+
+                    )
+
+                }
+
+            </AnimatePresence>
 
         </BrowserRouter>
 
     );
 
 }
-
-export default App;

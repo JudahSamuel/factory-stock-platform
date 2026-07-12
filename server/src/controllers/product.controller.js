@@ -42,6 +42,9 @@ export const uploadProducts = async (req, res) => {
         await prisma.product.deleteMany();
 
         // Insert fresh inventory
+
+        console.log("Products received from frontend:");
+console.table(products);
         await prisma.product.createMany({
 
             data: products.map(item => ({

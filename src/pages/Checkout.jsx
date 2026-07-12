@@ -1,11 +1,54 @@
 import { useLocation, useNavigate } from "react-router-dom";
-
+import Loader from "../components/Loader";
 import { useState } from "react";
 import { createOrder } from "../api/order";
+
+const indianStates = [
+
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
+
+];
 
 export default function Checkout() {
 
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const { state } = useLocation();
 
   if (!state || !state.items) {
@@ -44,7 +87,7 @@ export default function Checkout() {
     useState("");
 
   const [merchantState, setMerchantState] =
-    useState("");
+useState("Karnataka");
 
   const [merchantPlaceOfSupply, setMerchantPlaceOfSupply] =
     useState("");
@@ -146,8 +189,12 @@ export default function Checkout() {
 
         if (!validateInvoice()) return;
 
+        setLoading(true);
+
         const merchant = JSON.parse(
+
             localStorage.getItem("merchant")
+
         );
 
         await createOrder({
@@ -160,23 +207,23 @@ export default function Checkout() {
 
             grandTotal,
 
-            buyer:{
+            buyer: {
 
-merchantName,
+                merchantName,
 
-merchantGST,
+                merchantGST,
 
-merchantAddress,
+                merchantAddress,
 
-merchantState,
+                merchantState,
 
-merchantPlaceOfSupply,
+                merchantPlaceOfSupply,
 
-merchantContactPerson,
+                merchantContactPerson,
 
-merchantMobile
+                merchantMobile
 
-},
+            },
 
             shippingDetails,
 
@@ -190,11 +237,17 @@ merchantMobile
 
     }
 
-    catch(err){
+    catch (err) {
 
         console.log(err);
 
         alert("Failed to place order");
+
+    }
+
+    finally {
+
+        setLoading(false);
 
     }
 
@@ -362,19 +415,42 @@ merchantMobile
 
               
 
-              <input
-                placeholder="State"
-                className="border p-3 rounded"
-                value={merchantState}
-                onChange={(e) =>
-                  setMerchantState(e.target.value)
-                }
-              />
+              <select
+className="border p-3 rounded bg-white"
+value={merchantState}
+onChange={(e)=>{
+
+setMerchantState(e.target.value);
+
+setMerchantPlaceOfSupply(e.target.value);
+
+}}
+
+>
+
+{indianStates.map((state)=>(
+
+<option
+
+key={state}
+
+value={state}
+
+>
+
+{state}
+
+</option>
+
+))}
+
+</select>
 
               <input
-                placeholder="Place Of Supply"
-                className="border p-3 rounded"
-                value={merchantPlaceOfSupply}
+placeholder="Place Of Supply"
+value={merchantPlaceOfSupply}
+readOnly
+className="border p-3 rounded bg-gray-100"
                 onChange={(e) =>
                   setMerchantPlaceOfSupply(
                     e.target.value
@@ -472,16 +548,35 @@ merchantMobile
               }
             />
 
-            <input
-              placeholder="Transport Mode"
-              className="border p-3 rounded"
-              onChange={(e)=>
-                setShippingDetails({
-                  ...shippingDetails,
-                  transportMode:e.target.value
-                })
-              }
-            />
+            <select
+className="border p-3 rounded bg-white"
+onChange={(e)=>
+
+setShippingDetails({
+
+...shippingDetails,
+
+transportMode:e.target.value
+
+})
+
+}
+
+>
+
+<option value="">Select Transport</option>
+
+<option>Road</option>
+
+<option>Rail</option>
+
+<option>Air</option>
+
+<option>Courier</option>
+
+<option>Pickup</option>
+
+</select>
 
             <input
               placeholder="Vehicle Number"
@@ -590,11 +685,58 @@ merchantMobile
           
 
           <button
-            onClick={placeOrder}
-            className="w-full bg-green-600 text-white py-3 rounded-lg mt-4"
-          >
-            Request Order
-          </button>
+
+onClick={placeOrder}
+
+disabled={loading}
+
+className={`
+
+w-full
+
+py-3
+
+rounded-lg
+
+mt-4
+
+text-white
+
+font-semibold
+
+transition
+
+${loading
+
+? "bg-gray-400 cursor-not-allowed"
+
+: "bg-green-600 hover:bg-green-700"
+
+}
+
+`}
+
+>
+
+{
+
+loading
+
+?
+
+<div className="flex justify-center">
+
+<Loader text="Placing Order..." />
+
+</div>
+
+:
+
+"Request Order"
+
+}
+
+</button>
 
         </div>
 

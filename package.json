@@ -13,7 +13,7 @@
     "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.18.1",
     "firebase": "^12.14.0",
-    "framer-motion": "^12.42.0",
+    "framer-motion": "^12.42.2",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.14.0",
     "i18next": "^26.3.4",

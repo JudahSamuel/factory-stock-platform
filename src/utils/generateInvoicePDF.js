@@ -4,6 +4,15 @@ import { toWords } from "number-to-words";
 import signature from "../assets/signature.png";
 import logo from "../assets/lasya-logo.jpeg";
 import stamp from "../assets/stamp.jpg";
+const HSN_MAP = {
+    "Foil Container": "7615",
+    "Foil Roll": "7607",
+    "Wooden Spoon": "4419",
+    "Toothpick": "4421",
+    "Dustbin Cover Small": "3923",
+    "Dustbin Cover Medium": "3923",
+    "Dustbin Cover Large": "3923"
+};
 
 export const generateInvoicePDF = (data) => {
     console.log("FULL DATA:", data);
@@ -327,7 +336,7 @@ Mobile : ${merchantMobile}`,
   // ==========================
 // PRODUCT TABLE
 // ==========================
-console.log("ITEMS:", items);
+console.log(JSON.stringify(items, null, 2));
 autoTable(doc, {
   startY: doc.lastAutoTable.finalY + 5,
 
@@ -354,7 +363,7 @@ tableWidth: 190,
 
   item.product,
 
-  item.hsn || "-",
+  HSN_MAP[item.product] || "-",
 
   item.quantity,
 
@@ -602,7 +611,7 @@ doc.text(
 );
 
 doc.text(
-  "A/C No : 316905500111",
+  "A/C No : 20071010001547",
   135,
   bankY + 8
 );
@@ -637,7 +646,7 @@ doc.rect(
 doc.setFontSize(7);
 
 doc.text(
-  "Company's PAN : ABPPV7382L",
+  "Company's PAN : CIGPD0689G",
   17,
   declarationY -3
 );

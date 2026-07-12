@@ -43,7 +43,7 @@ model Product {
   unit      String
   price     Float
   gst       Float
-  hsn       String
+  hsn       String?
   updatedAt DateTime @updatedAt
 }
 
@@ -100,7 +100,7 @@ model OrderItem {
 
   product    String
 
-    hsn        String
+    hsn        String?
 
   quantity   Int
 

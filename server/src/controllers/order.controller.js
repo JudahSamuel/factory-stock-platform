@@ -24,6 +24,8 @@ items
 console.log("Shipping Details Received:", shippingDetails);
 
 const invoice="INV"+Date.now();
+console.log("========== ITEMS RECEIVED ==========");
+console.log(JSON.stringify(items, null, 2));
 
 const order=await prisma.order.create({
 

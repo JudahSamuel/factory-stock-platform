@@ -61,7 +61,8 @@ const loadProducts = async () => {
 
         const response = await getProducts();
 
-        setInventory(response.data);
+        console.table(response.data);
+setInventory(response.data);
 
     }
 
@@ -150,6 +151,8 @@ const loadProducts = async () => {
     };
 
     const addToCart = (item) => {
+        console.log("PRODUCT FROM INVENTORY");
+console.log(item);
 
     const qty =
         quantities[item.product] || 0;
@@ -307,147 +310,110 @@ const loadProducts = async () => {
 
 };
 
-    return(
+    return (
+
+    <>
 
         <AnimatedPage>
 
-            <div className="min-h-screen bg-slate-100">
+            <div className="min-h-screen bg-slate-100 pb-36">
 
                 <MerchantHeader
-    navigate={navigate}
-    merchant={merchant}
-/>
+                    navigate={navigate}
+                    merchant={merchant}
+                />
 
                 <div className="max-w-7xl mx-auto p-8">
 
                     <AnalyticsCards
-
                         totalProducts={totalProducts}
-
                         totalStock={totalStock}
-
-                        
-
                     />
 
                     <SearchFilter
-
                         search={search}
-
                         setSearch={setSearch}
-
                         category={category}
-
                         setCategory={setCategory}
-
                         categories={categories}
-
                     />
 
                     <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-6 pb-40">
 
-                        {
+                        {filteredInventory.map(item => (
 
-                            filteredInventory.map(item=>(
+                            <ProductCard
+                                key={item.id}
+                                item={item}
+                                quantity={quantities[item.product] || 0}
+                                increaseQty={increaseQty}
+                                decreaseQty={decreaseQty}
+                                addToCart={addToCart}
+                            />
 
-                                <ProductCard
-
-key={item.id}
-
-item={item}
-
-quantity={
-quantities[item.product] || 0
-}
-
-increaseQty={increaseQty}
-
-decreaseQty={decreaseQty}
-
-addToCart={addToCart}
-
-/>
-
-                            ))
-
-                        }
+                        ))}
 
                     </div>
 
                 </div>
 
                 <CartSummary
-
-expanded={cartExpanded}
-
-setExpanded={setCartExpanded}
-
-selectedItems={selectedItems}
-
-subtotal={subtotal}
-
-gstTotal={gstTotal}
-
-grandTotal={grandTotal}
-
-handleCheckout={handleCheckout}
-
-/>
+                    expanded={cartExpanded}
+                    setExpanded={setCartExpanded}
+                    selectedItems={selectedItems}
+                    subtotal={subtotal}
+                    gstTotal={gstTotal}
+                    grandTotal={grandTotal}
+                    handleCheckout={handleCheckout}
+                />
 
             </div>
 
-            <AccountDrawer
-
-open={accountOpen}
-
-navigate={navigate}
-
-onClose={() => setAccountOpen(false)}
-
-/>
-
-<BottomNavigation
-
-active={active}
-
-setActive={(tab)=>{
-
-    setActive(tab);
-
-    if(tab==="home"){
-
-        setAccountOpen(false);
-        setCartExpanded(false);
-
-        window.scrollTo({
-            top:0,
-            behavior:"smooth"
-        });
-
-    }
-
-    if(tab==="cart"){
-
-        setAccountOpen(false);
-        setCartExpanded(prev=>!prev);
-
-    }
-
-    if(tab==="account"){
-
-        setCartExpanded(false);
-        setAccountOpen(true);
-
-    }
-
-}}
-
-cartCount={selectedItems.length}
-
-/>
-
         </AnimatedPage>
 
-    );
+        <AccountDrawer
+            open={accountOpen}
+            navigate={navigate}
+            onClose={() => setAccountOpen(false)}
+        />
 
+        <BottomNavigation
+            active={active}
+            setActive={(tab) => {
+
+                setActive(tab);
+
+                if (tab === "home") {
+
+                    setAccountOpen(false);
+                    setCartExpanded(false);
+
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+
+                }
+
+                if (tab === "cart") {
+
+                    setAccountOpen(false);
+                    setCartExpanded(prev => !prev);
+
+                }
+
+                if (tab === "account") {
+
+                    setCartExpanded(false);
+                    setAccountOpen(true);
+
+                }
+
+            }}
+            cartCount={selectedItems.length}
+        />
+
+    </>
+
+);
 }

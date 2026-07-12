@@ -600,8 +600,18 @@ const invoiceNo = state.invoiceNo;
                     </td>
 
                     <td className="border p-3 text-center">
-                      {item.hsn}
-                    </td>
+    {
+        {
+            "Foil Container": "7615",
+            "Foil Roll": "7607",
+            "Wooden Spoon": "4419",
+            "Toothpick": "4421",
+            "Dustbin Cover Small": "3923",
+            "Dustbin Cover Medium": "3923",
+            "Dustbin Cover Large": "3923"
+        }[item.product] || "-"
+    }
+</td>
 
                     <td className="border p-3 text-center">
 

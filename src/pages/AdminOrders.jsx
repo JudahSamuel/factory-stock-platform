@@ -22,6 +22,10 @@ import {
     updateDelivery
 } from "../api/admin";
 
+import {
+    createCreditNote
+} from "../api/credit";
+
 export default function AdminOrders() {
 
     const navigate = useNavigate();
@@ -58,19 +62,32 @@ export default function AdminOrders() {
 
         catch (err) {
 
-            console.log(err);
+    console.log(err);
 
-            alert("Unable to load orders");
+    console.log(err.response);
 
-        }
+    console.log(err.response?.data);
 
-        finally {
+    alert(
 
-            setLoading(false);
+        JSON.stringify(
 
-        }
+            err.response?.data ||
 
-    };
+            err.message
+
+        )
+
+    );
+
+}
+finally {
+
+        setLoading(false);
+
+    }
+
+};
 
     useEffect(() => {
 
@@ -363,6 +380,32 @@ export default function AdminOrders() {
 
     };
 
+    const createCredit = async (order) => {
+    try {
+        console.log("Creating credit for Order ID:", order.id);
+
+        const res = await createCreditNote(order.id);
+
+        console.log(res.data);
+
+        alert("Credit Note Created Successfully");
+
+        await loadOrders();
+
+    } catch (err) {
+
+        console.log("STATUS:", err.response?.status);
+        console.log("DATA:", err.response?.data);
+
+        alert(
+            JSON.stringify(
+                err.response?.data ||
+                err.message
+            )
+        );
+    }
+};
+
     const saveDelivery = async (order) => {
 
     try {
@@ -378,7 +421,7 @@ export default function AdminOrders() {
 
         await sendInvoiceEmail(order.id);
 
-        await loadOrders();
+        await loadOrders(); 
 
         alert("Delivery details saved and invoice emailed.");
 
@@ -1341,7 +1384,7 @@ className="border rounded-lg p-3"
 
 type="date"
 
-vvalue={
+value={
     deliveryData[order.id]?.expectedDate ||
     (order.expectedDate
         ? order.expectedDate.slice(0, 10)
@@ -1453,24 +1496,19 @@ Save Delivery
                                                                 }
 
                                                                 {
+    order.paymentStatus !== "Paid" && (
 
-                                                                    order.paymentStatus!=="Paid"
+        <button
+            onClick={() => markPaid(order)}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg"
+        >
+            Mark Paid
+        </button>
 
-                                                                    &&
+    )
+}
 
-                                                                    <button
-
-                                                                        onClick={()=>markPaid(order)}
-
-                                                                        className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg"
-
-                                                                    >
-
-                                                                        Mark Paid
-
-                                                                    </button>
-
-                                                                }
+                                                                
 
                                                             </div>
 

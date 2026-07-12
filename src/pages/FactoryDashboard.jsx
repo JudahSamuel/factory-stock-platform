@@ -58,6 +58,8 @@ const loadProducts = async () => {
       const rows =
         XLSX.utils.sheet_to_json(sheet);
 
+        console.log(rows);
+
       const products = rows.map(row => ({
 
     product: row.Product,
@@ -75,6 +77,8 @@ const loadProducts = async () => {
     hsn: String(row.HSN || "")
 
 }));
+
+console.log(products);
 
 await uploadProducts(products);
 
@@ -259,6 +263,10 @@ Inventory Value
               </th>
 
               <th className="p-4 text-left">
+    HSN
+</th>
+
+              <th className="p-4 text-left">
                 Price
               </th>
 
@@ -295,6 +303,10 @@ duration-300
                 <td className="p-4">
                   {item.unit}
                 </td>
+
+                <td className="p-4">
+    {item.hsn}
+</td>
 
                 <td className="p-4">
                   ₹{item.price}
