@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.18.1",
+    "file-saver": "^2.0.5",
     "firebase": "^12.14.0",
     "framer-motion": "^12.42.2",
     "html2canvas": "^1.4.1",

@@ -11,3 +11,9 @@ body,
 body{
     overflow-x:hidden;
 }
+
+button,
+a,
+[role="button"] {
+    cursor: pointer;
+}

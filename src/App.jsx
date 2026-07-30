@@ -13,6 +13,8 @@ import MerchantProfile from "./pages/MerchantProfile";
 import MerchantRegister from "./pages/MerchantRegister";
 import MerchantApprovals from "./pages/MerchantApprovals";
 import SplashScreen from "./pages/SplashScreen";
+import Merchants from "./pages/Merchants";
+import MerchantDetails from "./pages/MerchantDetails";
 
 import FactoryDashboard from "./pages/FactoryDashboard";
 import MerchantDashboard from "./pages/MerchantDashboard";
@@ -122,6 +124,19 @@ function AnimatedRoutes() {
 
                 />
 
+                <Route
+    path="/merchant/:id"
+    element={
+        Animated(
+            <ProtectedAdminRoute>
+                <MerchantDetails />
+            </ProtectedAdminRoute>
+        )
+    }
+/>
+
+                
+
                 
 
                 <Route
@@ -143,6 +158,17 @@ function AnimatedRoutes() {
                     }
 
                 />
+
+                <Route
+    path="/merchants"
+    element={
+        Animated(
+            <ProtectedAdminRoute>
+                <Merchants />
+            </ProtectedAdminRoute>
+        )
+    }
+/>
 
                 <Route
 

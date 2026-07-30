@@ -1,9 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-
-    baseURL: "https://wholesome-vitality-production-139c.up.railway.app/api"
-
+    baseURL: "http://localhost:5000/api"
 });
 
 // Automatically attach Admin Token
@@ -12,9 +10,7 @@ API.interceptors.request.use((config) => {
     const token = localStorage.getItem("adminToken");
 
     if (token) {
-
         config.headers.Authorization = `Bearer ${token}`;
-
     }
 
     return config;
@@ -42,6 +38,24 @@ API.interceptors.response.use(
     }
 
 );
+
+// =======================
+// MERCHANTS
+// =======================
+
+// Approved merchants (Merchant Management page)
+export const getMerchants = () =>
+    API.get("/admin/merchants");
+
+// Pending merchants (Approval page)
+export const getPendingMerchants = () =>
+    API.get("/admin/pending-merchants");
+
+export const approveMerchant = (id) =>
+    API.put(`/admin/merchants/${id}/approve`);
+
+export const getMerchantDetails = (id) =>
+    API.get(`/admin/merchants/${id}`);
 
 // =======================
 // ORDERS
@@ -76,13 +90,3 @@ export const updateDelivery = (
         `/admin/orders/${id}/delivery`,
         data
     );
-
-// =======================
-// MERCHANT APPROVALS
-// =======================
-
-export const getPendingMerchants = () =>
-    API.get("/admin/merchants");
-
-export const approveMerchant = (id) =>
-    API.put(`/admin/merchants/${id}/approve`);

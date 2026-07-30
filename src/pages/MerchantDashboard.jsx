@@ -316,7 +316,7 @@ console.log(item);
 
         <AnimatedPage>
 
-            <div className="min-h-screen bg-slate-100 pb-36">
+            <div className="min-h-screen bg-slate-100 pb-28">
 
                 <MerchantHeader
                     navigate={navigate}
@@ -338,7 +338,7 @@ console.log(item);
                         categories={categories}
                     />
 
-                    <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-6 pb-40">
+                    <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-6 pb-24">
 
                         {filteredInventory.map(item => (
 
@@ -397,10 +397,10 @@ console.log(item);
 
                 if (tab === "cart") {
 
-                    setAccountOpen(false);
-                    setCartExpanded(prev => !prev);
+    setAccountOpen(false);
+    setCartExpanded(true);
 
-                }
+}
 
                 if (tab === "account") {
 

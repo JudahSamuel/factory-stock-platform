@@ -40,16 +40,22 @@ export default function AdminSidebar() {
         },
 
         {
-            name: t("orders"),
-            icon: ClipboardList,
-            path: "/admin-orders",
-        },
+    name: t("orders"),
+    icon: ClipboardList,
+    path: "/admin-orders",
+},
 
-        {
-            name: t("merchantApprovals"),
-            icon: Users,
-            path: "/merchant-approvals",
-        },
+{
+    name: "Merchants",
+    icon: Users,
+    path: "/merchants",
+},
+
+{
+    name: t("merchantApprovals"),
+    icon: Users,
+    path: "/merchant-approvals",
+},
 
         {
             name: t("analytics"),

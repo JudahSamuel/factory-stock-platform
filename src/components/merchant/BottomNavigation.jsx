@@ -3,328 +3,190 @@ import {
   FaShoppingCart,
   FaUserCircle,
 } from "react-icons/fa";
-
 import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
 
 export default function BottomNavigation({
-
   active,
-
   setActive,
-
   cartCount,
-
 }) {
-
   const tabs = [
-
     {
       id: "home",
-      icon: <FaHome size={22} />,
+      icon: <FaHome />,
       label: "Home",
     },
-
     {
       id: "cart",
-      icon: <FaShoppingCart size={22} />,
+      icon: <FaShoppingCart />,
       label: "Cart",
       badge: cartCount,
     },
-
     {
       id: "account",
-      icon: <FaUserCircle size={22} />,
+      icon: <FaUserCircle />,
       label: "Account",
     },
-
   ];
 
-  return (
-
+  return createPortal(
     <motion.div
-
-      initial={{ y: 120, opacity: 0 }}
-
+      initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-
       transition={{
-
-        duration: 0.6,
-
         type: "spring",
-
-        stiffness: 120,
-
+        stiffness: 220,
+        damping: 22,
       }}
-
       className="
-
-      fixed
-
-      bottom-5
-
-      left-1/2
-
-      -translate-x-1/2
-
-      z-[999]
-
-      bg-white/90
-
-      backdrop-blur-xl
-
-      border
-
-      border-white/40
-
-      shadow-[0_20px_50px_rgba(0,0,0,0.18)]
-
-      rounded-full
-
-      px-6
-
-      py-3
-
-      flex
-
-      items-center
-
-      justify-center
-
-      gap-10
-
-      w-[320px]
-
-      max-w-[92vw]
-
+        fixed
+        bottom-0
+        left-0
+        right-0
+        z-[999999]
+        flex
+        justify-center
+        pointer-events-none
+        pb-4
       "
-
     >
+      <nav
+  className="
+    pointer-events-auto
 
-      {tabs.map((tab) => (
+    w-full
+    max-w-4xl
 
-        <button
+    mx-5
+    mb-5
 
-          key={tab.id}
+    rounded-[30px]
 
-          onClick={() => setActive(tab.id)}
+    bg-white/25
+    backdrop-blur-[35px]
 
-          className="
+    border
+    border-white/40
 
-          relative
+    shadow-[0_20px_60px_rgba(0,0,0,0.18)]
 
-          flex
+    px-8
+    py-4
 
-          flex-col
+    flex
+    justify-around
+    items-center
 
-          items-center
+    transition-all
+    duration-300
+  "
+>
+        {tabs.map((tab) => {
+          const isActive = active === tab.id;
 
-          justify-center
-
-          transition-all
-
-          duration-300
-
-          "
-
-        >
-
-          {/* Active Circle */}
-
-          {active === tab.id && (
-
-            <motion.div
-
-              layoutId="activeTab"
-
-              className="
-
-              absolute
-
-              -top-2
-
-              w-12
-
-              h-12
-
-              rounded-full
-
-              bg-blue-100
-
-              "
-
+          return (
+            <motion.button
+              key={tab.id}
+              onClick={() => setActive(tab.id)}
+              whileTap={{ scale: 0.92 }}
+              animate={
+  isActive
+    ? {
+        y: -8,
+        scale: 1.08,
+      }
+    : {
+        y: 0,
+        scale: 1,
+      }
+}
               transition={{
-
                 type: "spring",
-
-                stiffness: 350,
-
-                damping: 25,
-
+                stiffness: 420,
+                damping: 20,
               }}
-
-            />
-
-          )}
-
-          {/* Icon */}
-
-          <motion.div
-
-            animate={
-
-              active === tab.id
-
-                ? {
-
-                    scale: 1.2,
-
-                    y: -6,
-
-                  }
-
-                : {
-
-                    scale: 1,
-
-                    y: 0,
-
-                  }
-
-            }
-
-            transition={{
-
-              duration: 0.25,
-
-            }}
-
-            className={`
-
-            relative
-
-            z-10
-
-            ${
-
-              active === tab.id
-
-                ? "text-blue-600"
-
-                : "text-gray-500"
-
-            }
-
-            `}
-
-          >
-
-            {tab.icon}
-
-          </motion.div>
-
-          {/* Badge */}
-
-          {tab.badge > 0 && (
-
-            <motion.span
-
-              initial={{ scale: 0 }}
-
-              animate={{ scale: 1 }}
-
-              transition={{
-
-                type: "spring",
-
-                stiffness: 250,
-
-              }}
-
               className="
-
-              absolute
-
-              top-0
-
-              right-0
-
-              bg-red-500
-
-              text-white
-
-              text-[10px]
-
-              rounded-full
-
-              w-5
-
-              h-5
-
-              flex
-
-              items-center
-
-              justify-center
-
-              z-20
-
+                relative
+                flex
+                flex-col
+                items-center
+                cursor-pointer
+                select-none
               "
-
             >
+              <div
+                className={`
+                  w-12
+                  h-12
+                  rounded-2xl
 
-              {tab.badge}
+                  flex
+                  items-center
+                  justify-center
 
-            </motion.span>
+                  transition-all
+                  duration-300
 
-          )}
+                  ${
+                    isActive
+  ? "bg-white/60 backdrop-blur-xl border border-white/70 text-blue-600 shadow-lg"
+  : "text-slate-500 hover:bg-white/30"
+                  }
+                `}
+              >
+                {tab.icon}
+              </div>
 
-          {/* Label */}
+              {tab.badge > 0 && (
+                <span
+                  className="
+                    absolute
+                    top-0
+                    right-0
 
-          <motion.span
+                    min-w-5
+                    h-5
+                    px-1
 
-            animate={{
+                    rounded-full
 
-              opacity: active === tab.id ? 1 : 0.7,
+                    bg-red-500
 
-            }}
+                    text-white
+                    text-[10px]
+                    font-bold
 
-            className={`
+                    flex
+                    items-center
+                    justify-center
+                  "
+                >
+                  {tab.badge}
+                </span>
+              )}
 
-            text-xs
+              <span
+                className={`
+                  mt-2
+                  text-xs
+                  font-medium
+                  transition-colors
 
-            mt-2
-
-            font-medium
-
-            relative
-
-            z-10
-
-            ${
-
-              active === tab.id
-
-                ? "text-blue-600"
-
-                : "text-gray-500"
-
-            }
-
-            `}
-
-          >
-
-            {tab.label}
-
-          </motion.span>
-
-        </button>
-
-      ))}
-
-    </motion.div>
-
+                  ${
+                    isActive
+                      ? "text-blue-600"
+                      : "text-slate-500"
+                  }
+                `}
+              >
+                {tab.label}
+              </span>
+            </motion.button>
+          );
+        })}
+      </nav>
+    </motion.div>,
+    document.body
   );
-
 }

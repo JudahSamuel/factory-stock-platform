@@ -49,7 +49,14 @@ export default function FactoryLogin() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center">
+    <div className="relative min-h-screen flex justify-center items-center">
+
+      <button
+  onClick={() => navigate("/")}
+  className="absolute top-6 left-6 bg-white border border-gray-300 px-5 py-2 rounded-lg shadow hover:bg-gray-100 transition cursor-pointer"
+>
+  ← Home
+</button>
 
       <div className="bg-white p-8 rounded-xl shadow w-[400px]">
 

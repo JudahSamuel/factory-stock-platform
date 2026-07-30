@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API = axios.create({
 
-    baseURL: "https://wholesome-vitality-production-139c.up.railway.app/api"
+    baseURL: "http://localhost:5000/api"
 
 });
 
@@ -51,6 +51,20 @@ API.interceptors.response.use(
 
 export const getProducts = () =>
     API.get("/products");
+
+export const addProduct = (data) =>
+    API.post("/products", data);
+
+export const updateStock = (id, stock) =>
+    API.patch(`/products/${id}/stock`, {
+        stock
+    });
+
+export const updateProduct = (id, data) =>
+    API.put(`/products/${id}`, data);
+
+export const deleteProduct = (id) =>
+    API.delete(`/products/${id}`);
 
 export const uploadProducts = (products) =>
     API.post("/products/upload", {
