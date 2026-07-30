@@ -10,7 +10,9 @@ export default function CreditNotes() {
 
         try {
 
-            const res = await getCreditNotes();
+            const merchant = JSON.parse(localStorage.getItem("merchant"));
+
+const res = await getMerchantCreditNotes(merchant.id);
 
             setNotes(res.data);
 
