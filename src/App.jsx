@@ -15,6 +15,7 @@ import MerchantApprovals from "./pages/MerchantApprovals";
 import SplashScreen from "./pages/SplashScreen";
 import Merchants from "./pages/Merchants";
 import MerchantDetails from "./pages/MerchantDetails";
+import MerchantCreditNotes from "./pages/MerchantCreditNotes";
 
 import FactoryDashboard from "./pages/FactoryDashboard";
 import MerchantDashboard from "./pages/MerchantDashboard";
@@ -103,6 +104,11 @@ function AnimatedRoutes() {
                     }
 
                 />
+
+                <Route
+  path="/merchant-credit-notes"
+  element={<MerchantCreditNotes />}
+/>
 
                 <Route
 

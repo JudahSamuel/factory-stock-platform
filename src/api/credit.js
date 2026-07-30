@@ -15,6 +15,7 @@ export const getMerchantCreditNotes = (merchantId) =>
 export const markPaid = (id) =>
     API.put(`/credit-notes/${id}/pay`);
 
+
 export const createCreditNote = async (id) => {
     try {
         const res = await API.post(`/credit-notes/create/${id}`);

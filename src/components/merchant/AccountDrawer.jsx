@@ -112,7 +112,7 @@ export default function AccountDrawer({
 
             onClose();
 
-            navigate("/credit-notes");
+            navigate("/merchant-credit-notes");
 
           }}
 
