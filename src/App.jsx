@@ -324,7 +324,10 @@ function AnimatedRoutes() {
 
 export default function App() {
 
-    const [showSplash, setShowSplash] = useState(true);
+    // Toggle this when you want the intro back
+    const SHOW_SPLASH = false;
+
+    const [showSplash, setShowSplash] = useState(SHOW_SPLASH);
 
     return (
 
@@ -333,31 +336,13 @@ export default function App() {
             <AnimatePresence mode="wait">
 
                 {
-
-                    showSplash ?
-
-                    (
-
+                    showSplash ? (
                         <SplashScreen
-
-                            onFinish={() =>
-
-                                setShowSplash(false)
-
-                            }
-
+                            onFinish={() => setShowSplash(false)}
                         />
-
-                    )
-
-                    :
-
-                    (
-
+                    ) : (
                         <AnimatedRoutes />
-
                     )
-
                 }
 
             </AnimatePresence>
