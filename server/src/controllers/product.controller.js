@@ -192,3 +192,100 @@ export const updateStock = async (req, res) => {
     }
 
 };
+
+export const updateProduct = async (req, res) => {
+
+    try {
+
+        const id = Number(req.params.id);
+
+        const {
+            product,
+            category,
+            unit,
+            price,
+            gst,
+            hsn
+        } = req.body;
+
+        const updated = await prisma.product.update({
+
+            where: {
+                id
+            },
+
+            data: {
+
+                product,
+
+                category,
+
+                unit,
+
+                price: Number(price),
+
+                gst: Number(gst),
+
+                hsn
+
+            }
+
+        });
+
+        res.json(updated);
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+
+            message: err.message
+
+        });
+
+    }
+
+};
+
+export const deleteProduct = async (req, res) => {
+
+    try {
+
+        const id = Number(req.params.id);
+
+        await prisma.product.delete({
+
+            where: {
+
+                id
+
+            }
+
+        });
+
+        res.json({
+
+            success: true,
+
+            message: "Product deleted"
+
+        });
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+
+            message: err.message
+
+        });
+
+    }
+
+};

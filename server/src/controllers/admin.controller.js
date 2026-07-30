@@ -278,7 +278,7 @@ export const updateOrderStatus = async (req, res) => {
 
         status:"Pending"
 
-    }
+    }   
 
 });
 
@@ -482,3 +482,120 @@ export const approveMerchant = async (req, res) => {
     });
 
 };
+
+export const getAllMerchants = async (req, res) => {
+
+    try {
+
+        const merchants = await prisma.merchant.findMany({
+
+            where: {
+                approved: true
+            },
+
+            include: {
+                orders: true,
+                creditNotes: true
+            },
+
+            orderBy: {
+                shopName: "asc"
+            }
+
+        });
+
+        const data = merchants.map((m) => {
+
+            const totalCredit = m.creditNotes.reduce(
+                (sum, note) => sum + note.balance,
+                0
+            );
+
+            return {
+
+                id: m.id,
+                ownerName: m.ownerName,
+                shopName: m.shopName,
+                email: m.email,
+                phone: m.phone,
+                gstNumber: m.gstNumber,
+                totalOrders: m.orders.length,
+                credit: totalCredit,
+                approved: m.approved
+
+            };
+
+        });
+
+        res.json(data);
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            message: err.message
+        });
+
+    }
+
+};
+
+export const getMerchantDetails = async (req, res) => {
+
+    try {
+
+        const id = Number(req.params.id);
+
+        const merchant = await prisma.merchant.findUnique({
+
+            where: {
+                id
+            },
+
+            include: {
+
+                orders: {
+
+                    orderBy: {
+                        createdAt: "desc"
+                    }
+
+                },
+
+                creditNotes: {
+
+                    orderBy: {
+                        createdAt: "desc"
+                    }
+
+                }
+
+            }
+
+        });
+
+        if (!merchant) {
+
+            return res.status(404).json({
+                message: "Merchant not found"
+            });
+
+        }
+
+        res.json(merchant);
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            message: err.message
+        });
+
+    }
+
+};
+
