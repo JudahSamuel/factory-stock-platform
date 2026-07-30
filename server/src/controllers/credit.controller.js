@@ -226,3 +226,25 @@ await prisma.order.update({
     }
 
 };
+
+export const getMyCreditNotes = async (req, res) => {
+  try {
+    const merchantId = req.user.id;
+
+    const creditNotes = await prisma.creditNote.findMany({
+      where: {
+        merchantId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.json(creditNotes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to fetch credit notes",
+    });
+  }
+};
