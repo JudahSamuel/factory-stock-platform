@@ -168,26 +168,27 @@ export const loginAdmin = async (req, res) => {
 
         }
 
-        const valid = await bcrypt.compare(
+        console.log("Entered Password:", password);
+console.log("Stored Hash:", admin.password);
 
-            password,
+const valid = await bcrypt.compare(
+    password,
+    admin.password
+);
 
-            admin.password
+console.log("Password Match:", valid);
 
-        );
+if (!valid) {
 
-        if (!valid) {
+    return res.status(401).json({
 
-            return res.status(401).json({
+        success: false,
 
-                success: false,
+        message: "Invalid password"
 
-                message: "Invalid password"
+    });
 
-            });
-
-        }
-
+}
         const token = jwt.sign(
 
             {

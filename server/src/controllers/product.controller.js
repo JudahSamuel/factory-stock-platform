@@ -90,3 +90,105 @@ console.table(products);
     }
 
 };
+
+export const addProduct = async (req, res) => {
+
+    try {
+
+        const {
+            product,
+            category,
+            stock,
+            unit,
+            price,
+            gst,
+            hsn
+        } = req.body;
+
+        if (!product) {
+            return res.status(400).json({
+                message: "Product name is required"
+            });
+        }
+
+        const newProduct = await prisma.product.create({
+
+            data: {
+
+                product,
+
+                category,
+
+                stock: Number(stock),
+
+                unit,
+
+                price: Number(price),
+
+                gst: Number(gst || 0),
+
+                hsn: String(hsn || "")
+
+            }
+
+        });
+
+        res.status(201).json({
+
+            success: true,
+
+            product: newProduct
+
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+
+            message: err.message
+
+        });
+
+    }
+
+};
+
+export const updateStock = async (req, res) => {
+
+    try {
+
+        const id = Number(req.params.id);
+
+        const { stock } = req.body;
+
+        const product = await prisma.product.update({
+
+            where: {
+                id
+            },
+
+            data: {
+                stock: Number(stock)
+            }
+
+        });
+
+        res.json(product);
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+
+            message: err.message
+
+        });
+
+    }
+
+};
