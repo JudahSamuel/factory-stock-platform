@@ -248,27 +248,3 @@ export const getMyCreditNotes = async (req, res) => {
     });
   }
 };
-
-export const getMerchantCreditNotes = async (req, res) => {
-  try {
-    const merchantId = Number(req.params.id);
-
-    const notes = await prisma.creditNote.findMany({
-      where: {
-        merchantId,
-      },
-      include: {
-        merchant: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    res.json(notes);
-  } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
-  }
-};
