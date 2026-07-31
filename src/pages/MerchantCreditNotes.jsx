@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMerchantCreditNotes } from "../api/credit";
-import BottomNavigation from "../components/BottomNavigation";
+import BottomNavigation from "../components/merchant/BottomNavigation";
 
 export default function MerchantCreditNotes() {
   const [notes, setNotes] = useState([]);
