@@ -11,13 +11,16 @@ export default function MerchantRegister() {
     const { t } = useTranslation();
 
     const [form, setForm] = useState({
-        shopName: "",
-        ownerName: "",
-        gstNumber: "",
-        email: "",
-        phone: "",
-        password: ""
-    });
+    shopName: "",
+    ownerName: "",
+    gstNumber: "",
+    email: "",
+    phone: "",
+    address: "",
+    state: "Karnataka",
+    contactPerson: "",
+    password: ""
+});
 
     const [loading, setLoading] = useState(false);
 
@@ -128,21 +131,50 @@ export default function MerchantRegister() {
                 />
 
                 <input
-                    name="phone"
-                    placeholder={t("phone")}
-                    className="border p-3 rounded w-full mb-4"
-                    onChange={handleChange}
-                    required
-                />
+    name="phone"
+    placeholder={t("phone")}
+    className="border p-3 rounded w-full mb-4"
+    onChange={handleChange}
+    required
+/>
 
-                <input
-                    name="password"
-                    type="password"
-                    placeholder={t("password")}
-                    className="border p-3 rounded w-full mb-6"
-                    onChange={handleChange}
-                    required
-                />
+<input
+    name="address"
+    placeholder="Address"
+    className="border p-3 rounded w-full mb-4"
+    onChange={handleChange}
+    required
+/>
+
+<input
+    name="contactPerson"
+    placeholder="Contact Person"
+    className="border p-3 rounded w-full mb-4"
+    onChange={handleChange}
+    required
+/>
+
+<select
+    name="state"
+    value={form.state}
+    onChange={handleChange}
+    className="border p-3 rounded w-full mb-4"
+>
+    <option value="Karnataka">Karnataka</option>
+    <option value="Tamil Nadu">Tamil Nadu</option>
+    <option value="Kerala">Kerala</option>
+    <option value="Maharashtra">Maharashtra</option>
+    {/* Add the remaining states here */}
+</select>
+
+<input
+    name="password"
+    type="password"
+    placeholder={t("password")}
+    className="border p-3 rounded w-full mb-6"
+    onChange={handleChange}
+    required
+/>
 
                 <button
                     type="submit"

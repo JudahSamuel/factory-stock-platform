@@ -16,13 +16,15 @@ import SplashScreen from "./pages/SplashScreen";
 import Merchants from "./pages/Merchants";
 import MerchantDetails from "./pages/MerchantDetails";
 import MerchantCreditNotes from "./pages/MerchantCreditNotes";
+import Invoice from "./pages/Invoice";
+import AdminInvoiceGenerator from "./pages/AdminInvoiceGenerator";
 
 import FactoryDashboard from "./pages/FactoryDashboard";
 import MerchantDashboard from "./pages/MerchantDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import OrdersDashboard from "./pages/OrdersDashboard";
 import Checkout from "./pages/Checkout";
-import InvoicePreview from "./pages/InvoicePreview";
+import ReviewOrder from "./pages/ReviewOrder";
 import AdminOrders from "./pages/AdminOrders";
 import Analytics from "./pages/Analytics";
 import CreditNotes from "./pages/CreditNotes";
@@ -86,6 +88,17 @@ function AnimatedRoutes() {
                 />
 
                 <Route
+    path="/admin-invoice"
+    element={
+        Animated(
+            <ProtectedAdminRoute>
+                <AdminInvoiceGenerator />
+            </ProtectedAdminRoute>
+        )
+    }
+/>
+
+                <Route
 
                     path="/factory-dashboard"
 
@@ -106,8 +119,14 @@ function AnimatedRoutes() {
                 />
 
                 <Route
-  path="/merchant-credit-notes"
-  element={<MerchantCreditNotes />}
+    path="/merchant-credit-notes"
+    element={
+        Animated(
+            <ProtectedMerchantRoute>
+                <MerchantCreditNotes />
+            </ProtectedMerchantRoute>
+        )
+    }
 />
 
                 <Route
@@ -141,7 +160,18 @@ function AnimatedRoutes() {
     }
 />
 
-                
+
+
+<Route
+    path="/invoice/:id"
+    element={
+        Animated(
+            <ProtectedMerchantRoute>
+                <Invoice />
+            </ProtectedMerchantRoute>
+        )
+    }
+/>
 
                 
 
@@ -319,24 +349,17 @@ function AnimatedRoutes() {
                 />
 
                 <Route
+    path="/review-order"
+    element={
+        Animated(
+            <ProtectedMerchantRoute>
+                <ReviewOrder />
+            </ProtectedMerchantRoute>
+        )
+    }
+/>
 
-                    path="/invoice/:id"
-
-                    element={
-
-                        Animated(
-
-                            <ProtectedMerchantRoute>
-
-                                <InvoicePreview />
-
-                            </ProtectedMerchantRoute>
-
-                        )
-
-                    }
-
-                />
+                
 
                 <Route
 

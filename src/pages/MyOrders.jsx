@@ -236,7 +236,7 @@ className={`px-4 py-2 rounded-full font-semibold ${badgeColor(order.status)}`}
 
                                         <div className="mt-6 flex justify-between items-center">
 
-    {(order.status === "Approved" ||
+    {(order.status === "Dispatched" ||
   order.status === "Delivered") ? (
 
     <button

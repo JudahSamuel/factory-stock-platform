@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+    useNavigate,
+    useParams,
+    useSearchParams
+} from "react-router-dom";
 import AdminSidebar from "../components/AdminSidebar";
 import AnimatedPage from "../components/AnimatedPage";
 import { getMerchantDetails } from "../api/admin";
@@ -12,7 +16,11 @@ export default function MerchantDetails() {
 
     const [merchant, setMerchant] = useState(null);
 
-    const [tab, setTab] = useState("profile");
+const [searchParams] = useSearchParams();
+
+const [tab, setTab] = useState(
+    searchParams.get("tab") || "profile"
+);
 
     useEffect(() => {
 
@@ -21,22 +29,19 @@ export default function MerchantDetails() {
     }, []);
 
     const loadMerchant = async () => {
+    try {
+        const res = await getMerchantDetails(id);
 
-        try {
+        console.log("Merchant Details Response:", res.data);
+        console.log("Orders:", res.data.orders);
+        console.log("Credit Notes:", res.data.creditNotes);
 
-            const res = await getMerchantDetails(id);
+        setMerchant(res.data);
 
-            setMerchant(res.data);
-
-        }
-
-        catch (err) {
-
-            console.log(err);
-
-        }
-
-    };
+    } catch (err) {
+        console.log(err);
+    }
+};
 
     if (!merchant) {
 

@@ -62,42 +62,37 @@ export default function Checkout() {
   }
 
   const { items } = state;
+  
 
-  const [shippingDetails, setShippingDetails] =
-  useState({
+  const [shippingDetails, setShippingDetails] = useState({
     deliveryNote: "",
-    supplierRef: "",
-    otherReference: "",
     buyersOrderNo: "",
-    dispatchDocumentNo: "",
-    transportMode: "",
-    vehicleNumber: "",
-    destination: "",
-    termsOfDelivery: "",
-  });
+    remarks: "",
+});
+
+const merchant = JSON.parse(localStorage.getItem("merchant"));
   const [taxType, setTaxType] =
   useState("CGST_SGST");
   const [merchantName, setMerchantName] =
-    useState("Patel Commercial");
+    useState(merchant?.shopName || "");
 
-  const [merchantGST, setMerchantGST] =
-    useState("29ABCDE1234F1Z5");
+const [merchantGST, setMerchantGST] =
+    useState(merchant?.gstNumber || "");
 
-  const [merchantAddress, setMerchantAddress] =
-    useState("");
+const [merchantAddress, setMerchantAddress] =
+    useState(merchant?.address || "");
 
-  const [merchantState, setMerchantState] =
-useState("Karnataka");
+const [merchantState, setMerchantState] =
+useState(merchant?.state || "Karnataka");
 
-  const [merchantPlaceOfSupply, setMerchantPlaceOfSupply] =
-    useState("");
+const [merchantPlaceOfSupply, setMerchantPlaceOfSupply] =
+useState(merchant?.state || "Karnataka");
 
-  const [merchantContactPerson, setMerchantContactPerson] =
-    useState("");
+const [merchantContactPerson, setMerchantContactPerson] =
+    useState(merchant?.contactPerson || "");
 
-  const [merchantMobile, setMerchantMobile] =
-    useState("");
-
+const [merchantMobile, setMerchantMobile] =
+    useState(merchant?.phone || "");
   const validateInvoice = () => {
 
     const missing = [];
@@ -118,31 +113,13 @@ useState("Karnataka");
       missing.push("Mobile Number");
 
     if (!shippingDetails.deliveryNote?.trim())
-      missing.push("Delivery Note");
+  missing.push("Delivery Note");
 
-    if (!shippingDetails.supplierRef?.trim())
-      missing.push("Supplier Reference");
+// Make PO Number optional.
+// If you want it mandatory, uncomment these lines.
 
-    if (!shippingDetails.otherReference?.trim())
-      missing.push("Other Reference");
-
-    if (!shippingDetails.buyersOrderNo?.trim())
-      missing.push("Buyer's Order Number");
-
-    if (!shippingDetails.dispatchDocumentNo?.trim())
-      missing.push("Dispatch Document Number");
-
-    if (!shippingDetails.transportMode?.trim())
-      missing.push("Transport Mode");
-
-    if (!shippingDetails.destination?.trim())
-      missing.push("Destination");
-
-    if (!shippingDetails.vehicleNumber?.trim())
-      missing.push("Vehicle Number");
-
-    if (!shippingDetails.termsOfDelivery?.trim())
-      missing.push("Terms Of Delivery");
+// if (!shippingDetails.buyersOrderNo?.trim())
+//   missing.push("Buyer's Order Number");
 
     if (missing.length > 0) {
       alert(
@@ -191,49 +168,27 @@ useState("Karnataka");
 
         setLoading(true);
 
-        const merchant = JSON.parse(
+        
 
-            localStorage.getItem("merchant")
-
-        );
-
-        await createOrder({
-
-            merchantId: merchant.id,
-
-            subtotal,
-
-            gst: gstTotal,
-
-            grandTotal,
-
-            buyer: {
-
-                merchantName,
-
-                merchantGST,
-
-                merchantAddress,
-
-                merchantState,
-
-                merchantPlaceOfSupply,
-
-                merchantContactPerson,
-
-                merchantMobile
-
-            },
-
-            shippingDetails,
-
-            items
-
-        });
-
-        alert("Order Placed Successfully");
-
-        navigate("/my-orders");
+        navigate("/review-order", {
+    state: {
+        merchantId: merchant.id,
+        subtotal,
+        gst: gstTotal,
+        grandTotal,
+        buyer: {
+            merchantName,
+            merchantGST,
+            merchantAddress,
+            merchantState,
+            merchantPlaceOfSupply,
+            merchantContactPerson,
+            merchantMobile
+        },
+        shippingDetails,
+        items
+    }
+});
 
     }
 
@@ -487,7 +442,7 @@ className="border p-3 rounded bg-gray-100"
         <div className="border rounded-lg p-5 mt-6">
 
           <h2 className="text-xl font-semibold mb-4">
-            Shipping Details
+            Order Details
           </h2>
           
 
@@ -504,28 +459,9 @@ className="border p-3 rounded bg-gray-100"
               }
             />
 
-            <input
-              placeholder="Supplier Ref"
-              className="border p-3 rounded"
-              onChange={(e)=>
-                setShippingDetails({
-                  ...shippingDetails,
-                  supplierRef:e.target.value
-                })
-              }
-            />
+            
 
-            <input
-              placeholder="Other Reference"
-              className="border p-3 rounded"
-              onChange={(e)=>
-                setShippingDetails({
-                  ...shippingDetails,
-                  otherReference:e.target.value
-                })
-              }
-            />
-
+            
             <input
               placeholder="Buyer's Order No"
               className="border p-3 rounded"
@@ -537,79 +473,24 @@ className="border p-3 rounded bg-gray-100"
               }
             />
 
-            <input
-              placeholder="Dispatch Document No"
-              className="border p-3 rounded"
-              onChange={(e)=>
-                setShippingDetails({
-                  ...shippingDetails,
-                  dispatchDocumentNo:e.target.value
-                })
-              }
-            />
+            <textarea
+    placeholder="Remarks (Optional)"
+    className="border p-3 rounded md:col-span-3"
+    onChange={(e) =>
+        setShippingDetails({
+            ...shippingDetails,
+            remarks: e.target.value,
+        })
+    }
+/>
 
-            <select
-className="border p-3 rounded bg-white"
-onChange={(e)=>
+            
 
-setShippingDetails({
+            
 
-...shippingDetails,
+            
 
-transportMode:e.target.value
-
-})
-
-}
-
->
-
-<option value="">Select Transport</option>
-
-<option>Road</option>
-
-<option>Rail</option>
-
-<option>Air</option>
-
-<option>Courier</option>
-
-<option>Pickup</option>
-
-</select>
-
-            <input
-              placeholder="Vehicle Number"
-              className="border p-3 rounded"
-              onChange={(e)=>
-                setShippingDetails({
-                  ...shippingDetails,
-                  vehicleNumber:e.target.value
-                })
-              }
-            />
-
-            <input
-              placeholder="Destination"
-              className="border p-3 rounded"
-              onChange={(e)=>
-                setShippingDetails({
-                  ...shippingDetails,
-                  destination:e.target.value
-                })
-              }
-            />
-
-            <input
-              placeholder="Terms Of Delivery"
-              className="border p-3 rounded"
-              onChange={(e)=>
-                setShippingDetails({
-                  ...shippingDetails,
-                  termsOfDelivery:e.target.value
-                })
-              }
-            />
+            
 
           </div>
 

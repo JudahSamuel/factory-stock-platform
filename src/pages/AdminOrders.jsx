@@ -217,10 +217,7 @@ finally {
                     return
                     "bg-green-100 text-green-700";
 
-                case "Packed":
-
-                    return
-                    "bg-blue-100 text-blue-700";
+                
 
                 case "Dispatched":
 
@@ -250,78 +247,50 @@ finally {
     // NEXT STATUS
     //---------------------------------------------------
 
-    const getNextStatus =
-        (status) => {
+    const getNextStatus = (status) => {
+    switch (status) {
+        case "Pending":
+            return "Approved";
 
-            switch (status) {
+        case "Approved":
+            return "Dispatched";
 
-                case "Pending":
+        case "Dispatched":
+            return "Delivered";
 
-                    return "Approved";
-
-                case "Approved":
-
-                    return "Packed";
-
-                case "Packed":
-
-                    return "Dispatched";
-
-                case "Dispatched":
-
-                    return "Delivered";
-
-                default:
-
-                    return null;
-
-            }
-
-        };
+        default:
+            return null;
+    }
+};
     //---------------------------------------------------
     // UPDATE ORDER STATUS
     //---------------------------------------------------
 
     const changeStatus = async (order) => {
-
     try {
 
         const nextStatus = getNextStatus(order.status);
 
         if (!nextStatus) return;
 
-        const discount = Number(
-            discounts[order.id] || 0
-        );
+        const discount = Number(discounts[order.id] || 0);
 
         await updateStatus(
-
             order.id,
-
             nextStatus,
-
             discount
-
         );
 
         await loadOrders();
 
-    }
-
-    catch (err) {
-
+    } catch (err) {
         console.log(err);
 
         alert(
-
             err?.response?.data?.message ||
-
             "Unable to update status"
-
         );
-
     }
-
 };
 
     //---------------------------------------------------
@@ -406,36 +375,28 @@ finally {
     }
 };
 
+    
+
     const saveDelivery = async (order) => {
-
     try {
-        console.log("Sending Delivery Data:", deliveryData[order.id]);
+        await updateDelivery(order.id, deliveryData[order.id]);
 
-        await updateDelivery(
+        try {
+            await sendInvoiceEmail(order.id);
+        } catch (emailErr) {
+            console.log("Email failed:", emailErr);
+        }
 
-            order.id,
+        await loadOrders();
 
-            deliveryData[order.id]
-
-        );
-
-        await sendInvoiceEmail(order.id);
-
-        await loadOrders(); 
-
-        alert("Delivery details saved and invoice emailed.");
-
-    }
-
-    catch (err) {
-
+        alert("Order dispatched successfully.");
+    } catch (err) {
         console.log(err);
-
         alert("Unable to save delivery");
-
     }
-
 };
+
+    
 
     //---------------------------------------------------
     // APPLY DISCOUNT
@@ -589,23 +550,26 @@ finally {
 
             <div className="flex justify-between items-center mb-8">
 
-                <div>
+    <div>
 
-                    <h1 className="text-4xl font-bold">
+        <h1 className="text-5xl font-bold">
+            Admin Orders
+        </h1>
 
-                        Admin Orders
+        <p className="text-gray-500 mt-2">
+            Manage all merchant orders
+        </p>
 
-                    </h1>
+    </div>
 
-                    <p className="text-gray-500 mt-2">
+    <button
+        onClick={() => navigate("/admin-invoice")}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow font-semibold"
+    >
+        + Add Invoice
+    </button>
 
-                        Manage all merchant orders
-
-                    </p>
-
-                </div>
-
-            </div>
+</div>
 
             {/* Dashboard Cards */}
 
@@ -735,7 +699,6 @@ finally {
 
                         <option>Approved</option>
 
-                        <option>Packed</option>
 
                         <option>Dispatched</option>
 
@@ -963,17 +926,15 @@ expandedOrder===order.id
 
 </button>
 
-<button
-
-onClick={()=>navigate(`/invoice/${order.id}`)}
-
-className="text-red-600 hover:underline"
-
->
-
-Invoice
-
-</button>
+{(order.status === "Dispatched" ||
+  order.status === "Delivered") && (
+    <button
+        onClick={() => navigate(`/invoice/${order.id}`)}
+        className="text-red-600"
+    >
+        Invoice
+    </button>
+)}
 
 </div>
 
@@ -1263,154 +1224,187 @@ Invoice
 
                                                             </div>
 
-                                                            {order.status !== "Pending" && (
+                                                            {order.status === "Approved" && (
 
 <div className="mt-8 border rounded-xl p-5">
 
 <h2 className="text-lg font-bold mb-4">
 
-Delivery Details
+Dispatch Details
 
 </h2>
 
 <div className="grid md:grid-cols-2 gap-4">
 
 <input
-
-placeholder="Delivery Partner"
-
-value={
-
-deliveryData[order.id]?.deliveryPartner ||
-
-order.deliveryPartner ||
-
-""
-
-}
-
+placeholder="Supplier Reference"
+value={deliveryData[order.id]?.supplierRef || order.supplierRef || ""}
 onChange={(e)=>
-
 setDeliveryData({
-
 ...deliveryData,
-
 [order.id]:{
-
 ...deliveryData[order.id],
+supplierRef:e.target.value
+}
+})
+}
+className="border rounded-lg p-3"
+/>
 
+<input
+placeholder="Dispatch Document No"
+value={deliveryData[order.id]?.dispatchDocumentNo || order.dispatchDocumentNo || ""}
+onChange={(e)=>
+setDeliveryData({
+...deliveryData,
+[order.id]:{
+...deliveryData[order.id],
+dispatchDocumentNo:e.target.value
+}
+})
+}
+className="border rounded-lg p-3"
+/>
+
+<select
+className="border rounded-lg p-3"
+value={deliveryData[order.id]?.deliveryPartner || order.deliveryPartner || ""}
+onChange={(e)=>
+setDeliveryData({
+...deliveryData,
+[order.id]:{
+...deliveryData[order.id],
 deliveryPartner:e.target.value
-
 }
-
 })
-
 }
+>
 
+<option value="">Select Transport</option>
+<option>Road</option>
+<option>Rail</option>
+<option>Air</option>
+<option>Courier</option>
+
+</select>
+
+<input
+placeholder="Transporter Name"
+value={deliveryData[order.id]?.transporterName || order.transporterName || ""}
+onChange={(e)=>
+setDeliveryData({
+...deliveryData,
+[order.id]:{
+...deliveryData[order.id],
+transporterName:e.target.value
+}
+})
+}
 className="border rounded-lg p-3"
-
 />
 
 <input
-
-placeholder="Vehicle Number"
-
-value={
-
-deliveryData[order.id]?.vehicleNumber ||
-
-order.vehicleNumber ||
-
-""
-
-}
-
-onChange={(e)=>
-
-setDeliveryData({
-
-...deliveryData,
-
-[order.id]:{
-
-...deliveryData[order.id],
-
-vehicleNumber:e.target.value
-
-}
-
-})
-
-}
-
-className="border rounded-lg p-3"
-
+    placeholder="Vehicle Number"
+    value={
+        deliveryData[order.id]?.vehicleNumber ||
+        order.vehicleNumber ||
+        ""
+    }
+    onChange={(e) =>
+        setDeliveryData({
+            ...deliveryData,
+            [order.id]: {
+                ...deliveryData[order.id],
+                vehicleNumber: e.target.value,
+            },
+        })
+    }
+    className="border rounded-lg p-3"
 />
 
 <input
-
-type="date"
-
-value={
-    deliveryData[order.id]?.dispatchDate ||
-    (order.dispatchDate
-        ? order.dispatchDate.slice(0, 10)
-        : "")
-}
-
+placeholder="Destination"
+value={deliveryData[order.id]?.destination || order.destination || ""}
 onChange={(e)=>
-
 setDeliveryData({
-
 ...deliveryData,
-
 [order.id]:{
-
 ...deliveryData[order.id],
-
-dispatchDate:e.target.value
-
+destination:e.target.value
 }
-
 })
-
 }
-
 className="border rounded-lg p-3"
-
 />
 
 <input
-
-type="date"
-
-value={
-    deliveryData[order.id]?.expectedDate ||
-    (order.expectedDate
-        ? order.expectedDate.slice(0, 10)
-        : "")
-}
-
+placeholder="LR / Consignment Number"
+value={deliveryData[order.id]?.lrNumber || order.lrNumber || ""}
 onChange={(e)=>
-
 setDeliveryData({
-
 ...deliveryData,
-
 [order.id]:{
-
 ...deliveryData[order.id],
-
-expectedDate:e.target.value
-
+lrNumber:e.target.value
 }
-
 })
-
 }
-
 className="border rounded-lg p-3"
+/>
 
+<input
+    type="date"
+    value={
+        deliveryData[order.id]?.dispatchDate ||
+        (order.dispatchDate
+            ? order.dispatchDate.slice(0, 10)
+            : "")
+    }
+    onChange={(e) =>
+        setDeliveryData({
+            ...deliveryData,
+            [order.id]: {
+                ...deliveryData[order.id],
+                dispatchDate: e.target.value,
+            },
+        })
+    }
+    className="border rounded-lg p-3"
+/>
+
+<input
+    type="date"
+    value={
+        deliveryData[order.id]?.expectedDate ||
+        (order.expectedDate
+            ? order.expectedDate.slice(0, 10)
+            : "")
+    }
+    onChange={(e) =>
+        setDeliveryData({
+            ...deliveryData,
+            [order.id]: {
+                ...deliveryData[order.id],
+                expectedDate: e.target.value,
+            },
+        })
+    }
+    className="border rounded-lg p-3"
+/>
+
+<input
+placeholder="Terms Of Delivery"
+value={deliveryData[order.id]?.termsOfDelivery || order.termsOfDelivery || ""}
+onChange={(e)=>
+setDeliveryData({
+...deliveryData,
+[order.id]:{
+...deliveryData[order.id],
+termsOfDelivery:e.target.value
+}
+})
+}
+className="border rounded-lg p-3 md:col-span-2"
 />
 
 </div>
@@ -1423,7 +1417,7 @@ className="mt-5 bg-blue-600 text-white px-5 py-3 rounded-lg"
 
 >
 
-Save Delivery
+Dispatch Order
 
 </button>
 
@@ -1472,28 +1466,19 @@ Save Delivery
                                                                 }
 
                                                                 {
+    order.status !== "Pending" &&
+    order.status !== "Approved" &&
+    getNextStatus(order.status) && (
 
-                                                                    order.status!=="Pending"
+        <button
+            onClick={() => changeStatus(order)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
+        >
+            Mark {getNextStatus(order.status)}
+        </button>
 
-                                                                    &&
-
-                                                                    getNextStatus(order.status)
-
-                                                                    &&
-
-                                                                    <button
-
-                                                                        onClick={()=>changeStatus(order)}
-
-                                                                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
-
-                                                                    >
-
-                                                                        Mark {getNextStatus(order.status)}
-
-                                                                    </button>
-
-                                                                }
+    )
+}
 
                                                                 {
     order.paymentStatus !== "Paid" && (

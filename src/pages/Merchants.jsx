@@ -132,27 +132,32 @@ export default function Merchants() {
 
                                         <td className="text-center space-x-2">
 
-                                            <button
+    <button
+        onClick={() => navigate(`/merchant/${m.id}`)}
+        className="bg-slate-900 text-white px-3 py-1 rounded hover:bg-black"
+    >
+        Profile
+    </button>
 
-    onClick={() => navigate(`/merchant/${m.id}`)}
+    <button
+        onClick={() =>
+            navigate(`/merchant/${m.id}?tab=orders`)
+        }
+        className="bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500"
+    >
+        Orders
+    </button>
 
-    className="bg-slate-900 text-white px-3 py-1 rounded hover:bg-black"
+    <button
+        onClick={() =>
+            navigate(`/merchant/${m.id}?tab=credit`)
+        }
+        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+    >
+        Credit
+    </button>
 
->
-
-    Profile
-
-</button>
-
-                                            <button className="bg-yellow-400 px-3 py-1 rounded hover:bg-yellow-500">
-                                                Orders
-                                            </button>
-
-                                            <button className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
-                                                Credit
-                                            </button>
-
-                                        </td>
+</td>
 
                                     </tr>
 

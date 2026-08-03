@@ -382,17 +382,29 @@ export const updatePaymentStatus = async (req, res) => {
 
         const {
 
-            deliveryPartner,
+    supplierRef,
 
-            vehicleNumber,
+    dispatchDocumentNo,
 
-            dispatchDate,
+    deliveryPartner,
 
-            expectedDate,
+    transporterName,
 
-            deliveredDate
+    vehicleNumber,
 
-        } = req.body;
+    destination,
+
+    lrNumber,
+
+    dispatchDate,
+
+    expectedDate,
+
+    deliveredDate,
+
+    termsOfDelivery
+
+} = req.body;
 
         const order = await prisma.order.update({
 
@@ -404,23 +416,37 @@ export const updatePaymentStatus = async (req, res) => {
 
     data: {
 
-        deliveryPartner: deliveryPartner ?? "",
+    supplierRef: supplierRef ?? "",
 
-        vehicleNumber: vehicleNumber ?? "",
+    dispatchDocumentNo: dispatchDocumentNo ?? "",
 
-        dispatchDate: dispatchDate
-            ? new Date(dispatchDate)
-            : null,
+    deliveryPartner: deliveryPartner ?? "",
 
-        expectedDate: expectedDate
-            ? new Date(expectedDate)
-            : null,
+    transporterName: transporterName ?? "",
 
-        deliveredDate: deliveredDate
-            ? new Date(deliveredDate)
-            : null
+    vehicleNumber: vehicleNumber ?? "",
 
-    }
+    destination: destination ?? "",
+
+    lrNumber: lrNumber ?? "",
+
+    termsOfDelivery: termsOfDelivery ?? "",
+
+    dispatchDate: dispatchDate
+        ? new Date(dispatchDate)
+        : null,
+
+    expectedDate: expectedDate
+        ? new Date(expectedDate)
+        : null,
+
+    deliveredDate: deliveredDate
+        ? new Date(deliveredDate)
+        : null,
+
+    status: "Dispatched"
+
+}
 
 });
 

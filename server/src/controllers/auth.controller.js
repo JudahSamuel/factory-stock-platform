@@ -6,13 +6,16 @@ import jwt from "jsonwebtoken";
 export const registerMerchant = async (req, res) => {
   try {
     const {
-      shopName,
-      ownerName,
-      gstNumber,
-      email,
-      phone,
-      password,
-    } = req.body;
+  shopName,
+  ownerName,
+  gstNumber,
+  email,
+  phone,
+  address,
+  state,
+  contactPerson,
+  password,
+} = req.body;
 
     const existingMerchant = await prisma.merchant.findFirst({
       where: {
@@ -39,6 +42,9 @@ export const registerMerchant = async (req, res) => {
     gstNumber,
     email,
     phone,
+    address,
+    state,
+    contactPerson,
     password: hashedPassword,
     approved: false,
   },
@@ -117,15 +123,20 @@ export const loginMerchant = async (req, res) => {
     );
 
     res.json({
-      success: true,
-      token,
-      merchant: {
-        id: merchant.id,
-        shopName: merchant.shopName,
-        ownerName: merchant.ownerName,
-        email: merchant.email,
-      },
-    });
+  success: true,
+  token,
+  merchant: {
+    id: merchant.id,
+    shopName: merchant.shopName,
+    ownerName: merchant.ownerName,
+    email: merchant.email,
+    phone: merchant.phone,
+    gstNumber: merchant.gstNumber,
+    address: merchant.address,
+    state: merchant.state,
+    contactPerson: merchant.contactPerson
+},
+});
 
   } catch (error) {
 

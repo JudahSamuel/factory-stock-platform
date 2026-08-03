@@ -1,144 +1,142 @@
 import prisma from "../config/prisma.js";
 
-export const createOrder = async (req,res)=>{
+export const createOrder = async (req, res) => {
+    try {
 
-try{
+        const {
+            merchantId,
+            subtotal,
+            gst,
+            grandTotal,
+            buyer,
+            shippingDetails,
+            items
+        } = req.body;
 
-const {
+        console.log("Shipping Details Received:", shippingDetails);
 
-merchantId,
+        const invoice = "INV" + Date.now();
 
-subtotal,
+        console.log("========== ITEMS RECEIVED ==========");
+        console.log(JSON.stringify(items, null, 2));
 
-gst,
+        const order = await prisma.order.create({
+            data: {
+                invoice,
 
-grandTotal,
+                merchantId,
 
-buyer,
+                subtotal,
+                gst,
+                grandTotal,
 
-shippingDetails,
+                state: buyer.merchantState,
+                placeOfSupply: buyer.merchantPlaceOfSupply,
 
-items
+                status: "Pending",
+                paymentStatus: "Pending",
 
-} = req.body;
-console.log("Shipping Details Received:", shippingDetails);
+                // Order Details
+                deliveryNote: shippingDetails.deliveryNote,
+                buyersOrderNo: shippingDetails.buyersOrderNo,
+                remarks: shippingDetails.remarks,
 
-const invoice="INV"+Date.now();
-console.log("========== ITEMS RECEIVED ==========");
-console.log(JSON.stringify(items, null, 2));
+                // Buyer Details
+                shippingAddress: buyer.merchantAddress,
+                contactPerson: buyer.merchantContactPerson,
+                phone: buyer.merchantMobile,
+                gstNumber: buyer.merchantGST,
 
-const order=await prisma.order.create({
+                items: {
+                    create: items.map(item => ({
+                        product: item.product,
+                        hsn: item.hsn,
+                        quantity: item.quantity,
+                        rate: item.rate,
+                        gst: item.gstRate,
+                        amount: item.quantity * item.rate
+                    }))
+                }
+            },
 
-data:{
+            include: {
+                items: true
+            }
+        });
 
-invoice,
+        res.json(order);
 
-merchantId,
+    } catch (err) {
+        console.log(err);
 
-subtotal,
+        res.status(500).json({
+            message: err.message
+        });
+    }
+};
 
-gst,
+export const getOrders = async (req, res) => {
 
-grandTotal,
+    try {
 
-state: buyer.merchantState,
+        const merchantId = Number(req.params.id);
 
-placeOfSupply: buyer.merchantPlaceOfSupply,
+        const orders = await prisma.order.findMany({
 
-status:"Pending",
+            where: {
+                merchantId
+            },
 
-paymentStatus:"Pending",
+            include: {
+                items: true
+            },
 
-deliveryNote: shippingDetails.deliveryNote,
+            orderBy: {
+                createdAt: "desc"
+            }
 
-supplierRef: shippingDetails.supplierRef,
+        });
 
-otherReference: shippingDetails.otherReference,
+        res.json(orders);
 
-dispatchDocumentNo:
-    shippingDetails.dispatchDocumentNo,
+    } catch (err) {
 
-termsOfDelivery:
-    shippingDetails.termsOfDelivery,
+        console.log(err);
 
-// Buyer Details
+        res.status(500).json({
+            message: err.message
+        });
 
-shippingAddress: buyer.merchantAddress,
-
-contactPerson: buyer.merchantContactPerson,
-
-phone: buyer.merchantMobile,
-
-// Shipping Details
-
-deliveryPartner: shippingDetails.transportMode,
-
-vehicleNumber: shippingDetails.vehicleNumber,
-
-remarks: shippingDetails.termsOfDelivery,
-
-items:{
-
-create: items.map(item => ({
-
-    product: item.product,
-
-    hsn: item.hsn,
-
-    quantity: item.quantity,
-
-    rate: item.rate,
-
-    gst: item.gstRate,
-
-    amount: item.quantity * item.rate
-
-}))
-
-}
-
-},
-
-include:{
-
-items:true
-
-}
-
-});
-
-res.json(order);
-
-}
-
-catch(err){
-
-console.log(err);
-
-res.status(500).json({
-
-message:err.message
-
-});
-
-}
+    }
 
 };
 
-export const getOrders=async(req,res)=>{
+// ===========================
+// GET SINGLE INVOICE
+// ===========================
 
-const merchantId=Number(req.params.id);
+export const getInvoice = async (req, res) => {
+    try {
+        const orderId = Number(req.params.id);
 
-const orders=await prisma.order.findMany({
+        const order = await prisma.order.findUnique({
+            where: {
+                id: orderId
+            },
+            include: {
+                merchant: true,
+                items: true
+            }
+        });
 
-where:{merchantId},
+        console.log(JSON.stringify(order, null, 2));
 
-include:{items:true},
+        res.json(order);
 
-orderBy:{createdAt:"desc"}
-
-});
-
-res.json(orders);
-
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: err.message
+        });
+    }
 };

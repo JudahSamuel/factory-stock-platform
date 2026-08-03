@@ -14,11 +14,17 @@ model Merchant {
   gstNumber String   @unique
   email     String   @unique
   phone     String
+
+  address   String   @default("")
+  state     String   @default("Karnataka")
+  contactPerson String @default("")
+
   password  String
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
-  orders      Order[]
-creditNotes CreditNote[]
+
+  orders Order[]
+  creditNotes CreditNote[]
 }
 
 model Admin {
@@ -72,14 +78,19 @@ model Order {
 placeOfSupply  String @default("Karnataka")
 contactPerson String @default("")
 phone String @default("")
+gstNumber       String @default("")
 remarks String @default("")
 deliveryNote       String @default("")
+buyersOrderNo String @default("")
 supplierRef        String @default("")
 otherReference     String @default("")
 dispatchDocumentNo String @default("")
 termsOfDelivery    String @default("")
 deliveryPartner String @default("")
 vehicleNumber   String @default("")
+transporterName String @default("")
+lrNumber        String @default("")
+destination     String @default("")
 
   createdAt        DateTime  @default(now())
 

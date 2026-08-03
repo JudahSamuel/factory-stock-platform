@@ -31,7 +31,20 @@ export const generateInvoicePDF = (data) => {
     merchantContactPerson,
     merchantMobile,
 
-    shippingDetails,
+    // Order Details
+    deliveryNote,
+    buyersOrderNo,
+    remarks,
+
+    // Dispatch Details
+    supplierRef,
+    dispatchDocumentNo,
+    deliveryPartner,
+    transporterName,
+    vehicleNumber,
+    destination,
+    lrNumber,
+    termsOfDelivery,
 
     items,
     subtotal,
@@ -41,8 +54,7 @@ export const generateInvoicePDF = (data) => {
     discountPercent = 0,
     discountAmount = 0,
     taxableAfterDiscount,
-  } = data;
-    console.log("Shipping Details:", shippingDetails);
+} = data;
 
 
 
@@ -201,7 +213,7 @@ GSTIN : 29CIGPD0689G1Z4`,
     [
       "Delivery Note",
       {
-        content: shippingDetails?.deliveryNote || "-",
+        content: deliveryNote || "-",
         styles: {
           fontStyle: "bold"
         }
@@ -210,19 +222,7 @@ GSTIN : 29CIGPD0689G1Z4`,
   ]
 })
 
-console.log("Shipping Details:", shippingDetails);
 
-console.log("deliveryNote =", shippingDetails?.deliveryNote);
-console.log("buyersOrderNo =", shippingDetails?.buyersOrderNo);
-console.log("dispatchDocumentNo =", shippingDetails?.dispatchDocumentNo);
-console.log("transportMode =", shippingDetails?.transportMode);
-console.log("destination =", shippingDetails?.destination);
-console.log("vehicleNumber =", shippingDetails?.vehicleNumber);
-console.log("termsOfDelivery =", shippingDetails?.termsOfDelivery);
-console.log(
-  "Terms Of Delivery:",
-  shippingDetails?.termsOfDelivery
-);
 
 autoTable(doc,{
   startY: doc.lastAutoTable.finalY,
@@ -256,7 +256,7 @@ State : ${merchantState}
 Place : ${merchantPlaceOfSupply}
 Contact : ${merchantContactPerson}
 Mobile : ${merchantMobile}`,
-        rowSpan:6,
+        rowSpan:10,
         styles:{
           fontStyle:"bold"
         }
@@ -265,7 +265,7 @@ Mobile : ${merchantMobile}`,
       "Buyer's Order No",
       {
         content:
-          shippingDetails?.buyersOrderNo || "-",
+          buyersOrderNo || "-",
         styles:{
           fontStyle:"bold"
         }
@@ -273,10 +273,42 @@ Mobile : ${merchantMobile}`,
     ],
 
     [
+  "Supplier Reference",
+  {
+    content: supplierRef || "-",
+    styles: { fontStyle: "bold" }
+  }
+],
+
+[
+  "Transporter Name",
+  {
+    content: transporterName || "-",
+    styles: { fontStyle: "bold" }
+  }
+],
+
+[
+  "LR Number",
+  {
+    content: lrNumber || "-",
+    styles: { fontStyle: "bold" }
+  }
+],
+
+[
+  "Remarks",
+  {
+    content: remarks || "-",
+    styles: { fontStyle: "bold" }
+  }
+],
+
+    [
       "Dispatch Document No",
       {
         content:
-          shippingDetails?.dispatchDocumentNo || "-",
+          dispatchDocumentNo || "-",
         styles:{
           fontStyle:"bold"
         }
@@ -287,7 +319,7 @@ Mobile : ${merchantMobile}`,
       "Dispatched Through",
       {
         content:
-          shippingDetails?.transportMode || "-",
+          deliveryPartner || "-",
         styles:{
           fontStyle:"bold"
         }
@@ -298,7 +330,7 @@ Mobile : ${merchantMobile}`,
       "Destination",
       {
         content:
-          shippingDetails?.destination || "-",
+          destination || "-",
         styles:{
           fontStyle:"bold"
         }
@@ -309,7 +341,7 @@ Mobile : ${merchantMobile}`,
       "Vehicle Number",
       {
         content:
-          shippingDetails?.vehicleNumber || "-",
+          vehicleNumber || "-",
         styles:{
           fontStyle:"bold"
         }
@@ -321,7 +353,7 @@ Mobile : ${merchantMobile}`,
     [
   {
     content:
-      `Terms Of Delivery : ${shippingDetails?.termsOfDelivery || "-"}`,
+      `Terms Of Delivery : ${termsOfDelivery || "-"}`,
     colSpan:3,
     styles:{
       fontStyle:"bold",
@@ -426,8 +458,7 @@ items.forEach(item => {
   Number(item.rate) *
   (1 - Number(discountPercent || 0) / 100);
 
-  const gstRate =
-    Number(item.gst || 0);
+  const gstRate = item.gstRate ?? item.gst ?? 0;
 
   if(!gstBreakup[gstRate]){
     gstBreakup[gstRate] = {
