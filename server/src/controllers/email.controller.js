@@ -42,6 +42,17 @@ export const sendInvoiceEmail = async (req, res) => {
         const invoiceLink =
             `${process.env.CLIENT_URL}/invoice/${order.id}`;
 
+        console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
+console.log("Recipient:", order?.merchant?.email);
+
+try {
+    await transporter.verify();
+    console.log("SMTP VERIFIED");
+} catch (e) {
+    console.error("SMTP VERIFY FAILED:", e);
+}
+
         await transporter.sendMail({
 
             from: `"Lasya Enterprises" <${process.env.EMAIL_USER}>`,
