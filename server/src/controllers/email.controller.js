@@ -42,16 +42,14 @@ export const sendInvoiceEmail = async (req, res) => {
         const invoiceLink =
             `${process.env.CLIENT_URL}/invoice/${order.id}`;
 
-        console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("CLIENT_URL:", process.env.CLIENT_URL);
-console.log("Recipient:", order?.merchant?.email);
+        
+console.log("EMAIL USER:", process.env.EMAIL_USER);
+console.log("CLIENT URL:", process.env.CLIENT_URL);
+console.log("RECIPIENT:", order?.merchant?.email);
 
-try {
-    await transporter.verify();
-    console.log("SMTP VERIFIED");
-} catch (e) {
-    console.error("SMTP VERIFY FAILED:", e);
-}
+await transporter.verify();
+
+console.log("SMTP VERIFIED");
 
         await transporter.sendMail({
 
@@ -219,14 +217,15 @@ This is an automated email.
 
     catch (err) {
 
-        console.log(err);
+    console.error("========== EMAIL ERROR ==========");
+    console.error(err);
 
-        res.status(500).json({
+    res.status(500).json({
+        success: false,
+        message: err.message,
+        stack: err.stack
+    });
 
-            message: err.message
-
-        });
-
-    }
+}
 
 };
