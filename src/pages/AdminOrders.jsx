@@ -382,10 +382,27 @@ finally {
         await updateDelivery(order.id, deliveryData[order.id]);
 
         try {
-            await sendInvoiceEmail(order.id);
-        } catch (emailErr) {
-            console.log("Email failed:", emailErr);
-        }
+
+    const res = await sendInvoiceEmail(order.id);
+
+    console.log(res.data);
+
+}
+catch (emailErr) {
+
+    console.log(emailErr);
+
+    console.log(emailErr.response);
+
+    console.log(emailErr.response?.data);
+
+    alert(
+        JSON.stringify(
+            emailErr.response?.data
+        )
+    );
+
+}
 
         await loadOrders();
 
