@@ -8,11 +8,7 @@ useState
 
 } from "react";
 
-import {
 
-    sendInvoiceEmail
-
-} from "../api/email";
 
 import { useNavigate } from "react-router-dom";
 import {
@@ -378,42 +374,92 @@ finally {
     
 
     const saveDelivery = async (order) => {
+
     try {
+
+        // Save delivery details
         await updateDelivery(order.id, deliveryData[order.id]);
 
-        try {
+        const data = deliveryData[order.id] || {};
 
-    const res = await sendInvoiceEmail(order.id);
+        const phone = order.merchant?.phone;
 
-    console.log(res.data);
+        const message = `*LASYA ENTERPRISES*
 
-}
-catch (emailErr) {
+Hello ${order.merchant.ownerName},
 
-    console.log(emailErr);
+Your order has been dispatched successfully.
 
-    console.log(emailErr.response);
+━━━━━━━━━━━━━━━━━━
 
-    console.log(emailErr.response?.data);
+*Invoice No:*
+${order.invoice}
 
-    alert(
-        JSON.stringify(
-            emailErr.response?.data
-        )
+*Transport Mode:*
+${data.deliveryPartner || order.deliveryPartner || "-"}
+
+*Transporter:*
+${data.transporterName || order.transporterName || "-"}
+
+*Vehicle Number:*
+${data.vehicleNumber || order.vehicleNumber || "-"}
+
+*LR Number:*
+${data.lrNumber || order.lrNumber || "-"}
+
+*Destination:*
+${data.destination || order.destination || "-"}
+
+*Dispatch Date:*
+${data.dispatchDate || order.dispatchDate || "-"}
+
+*Expected Delivery:*
+${data.expectedDate || order.expectedDate || "-"}
+
+━━━━━━━━━━━━━━━━━━
+
+*View Invoice*
+
+https://www.lasyaenterprises.in/invoice/${order.id}
+
+Thank you for choosing Lasya Enterprises.
+
+`;
+
+        if (phone) {
+
+    // Remove everything except digits
+    const formattedPhone = phone.replace(/\D/g, "");
+
+    // Add country code only if it doesn't already exist
+    const whatsappNumber =
+        formattedPhone.startsWith("91")
+            ? formattedPhone
+            : `91${formattedPhone}`;
+
+    window.open(
+        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
+        "_blank"
     );
 
 }
 
         await loadOrders();
 
-        alert("Order dispatched successfully.");
-    } catch (err) {
-        console.log(err);
-        alert("Unable to save delivery");
+        alert("Order dispatched successfully.\nWhatsApp opened.");
+
     }
+
+    catch (err) {
+
+        console.log(err);
+
+        alert("Unable to save delivery");
+
+    }
+
 };
 
-    
 
     //---------------------------------------------------
     // APPLY DISCOUNT

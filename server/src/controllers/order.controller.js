@@ -15,7 +15,17 @@ export const createOrder = async (req, res) => {
 
         console.log("Shipping Details Received:", shippingDetails);
 
-        const invoice = "INV" + Date.now();
+        const result = await prisma.$queryRaw`
+    SELECT nextval('invoice_number_seq') AS number
+`;
+
+const invoiceNumber = Number(result[0].number);
+
+const invoice =
+    "INV" +
+    String(invoiceNumber).padStart(3, "0");
+
+console.log("Generated Invoice Number:", invoice);
 
         console.log("========== ITEMS RECEIVED ==========");
         console.log(JSON.stringify(items, null, 2));
