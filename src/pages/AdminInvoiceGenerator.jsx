@@ -236,7 +236,7 @@ const grandTotal =
 
     generateInvoicePDF({
 
-    invoiceNo: "INV" + Date.now(),
+    invoiceNo: "",
 
     date: new Date().toLocaleDateString("en-IN"),
 

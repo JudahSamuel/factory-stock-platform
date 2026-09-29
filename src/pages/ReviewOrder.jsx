@@ -36,41 +36,40 @@ export default function ReviewOrder() {
 
     const placeOrder = async () => {
 
-        try {
+    try {
 
-            await createOrder({
+        const response = await createOrder({
 
-                merchantId,
+            merchantId,
+            buyer,
+            shippingDetails,
+            items,
+            subtotal,
+            gst,
+            grandTotal
 
-                buyer,
+        });
 
-                shippingDetails,
+        console.log("🔥 ORDER CREATED:", response.data);
+        console.log("🔥 INVOICE NUMBER:", response.data.invoice);
 
-                items,
+        alert(
+            `Order placed successfully.\nInvoice: ${response.data.invoice}`
+        );
 
-                subtotal,
+        navigate("/my-orders");
 
-                gst,
+    }
 
-                grandTotal
+    catch (err) {
 
-            });
+        console.log(err);
 
-            alert("Order placed successfully.");
+        alert("Unable to place order.");
 
-            navigate("/my-orders");
+    }
 
-        }
-
-        catch (err) {
-
-            console.log(err);
-
-            alert("Unable to place order.");
-
-        }
-
-    };
+};
 
     return (
 

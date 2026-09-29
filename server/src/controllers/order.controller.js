@@ -15,15 +15,32 @@ export const createOrder = async (req, res) => {
 
         console.log("Shipping Details Received:", shippingDetails);
 
-        const result = await prisma.$queryRaw`
-    SELECT nextval('invoice_number_seq') AS number
-`;
+        const now = new Date();
 
-const invoiceNumber = Number(result[0].number);
+const day = String(now.getDate()).padStart(2, "0");
+const month = String(now.getMonth() + 1).padStart(2, "0");
+const year = now.getFullYear();
 
-const invoice =
-    "INV" +
-    String(invoiceNumber).padStart(3, "0");
+const todayStart = new Date(now);
+todayStart.setHours(0, 0, 0, 0);
+
+const tomorrow = new Date(todayStart);
+tomorrow.setDate(tomorrow.getDate() + 1);
+
+const todayOrderCount = await prisma.order.count({
+    where: {
+        createdAt: {
+            gte: todayStart,
+            lt: tomorrow
+        }
+    }
+});
+
+const invoiceNumber = String(todayOrderCount + 1).padStart(4, "0");
+
+const invoice = `${day}${month}${year}-${invoiceNumber}`;
+
+console.log("🔥 GENERATED INVOICE:", invoice);
 
 console.log("Generated Invoice Number:", invoice);
 
