@@ -15,7 +15,8 @@ import {
     getAllOrders,
     updateStatus,
     updatePayment,
-    updateDelivery
+    updateDelivery,
+    deleteOrder 
 } from "../api/admin";
 
 import {
@@ -83,6 +84,34 @@ finally {
 
     }
 
+};
+
+const handleDeleteOrder = async (order) => {
+
+    const confirmed = window.confirm(
+        `Are you sure you want to delete invoice ${order.invoice}?\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+
+        await deleteOrder(order.id);
+
+        alert("Invoice deleted successfully.");
+
+        await loadOrders();
+
+    } catch (err) {
+
+        console.log("DELETE ORDER ERROR:", err);
+
+        alert(
+            err?.response?.data?.message ||
+            "Unable to delete invoice."
+        );
+
+    }
 };
 
     useEffect(() => {
@@ -963,43 +992,35 @@ Thank you for choosing Lasya Enterprises.
 
                                         <td>
 
-<div className="flex gap-3">
+    <div className="flex gap-3 items-center">
 
-<button
+        <button
+            onClick={() => toggleOrder(order.id)}
+            className="text-blue-600 hover:underline"
+        >
+            {expandedOrder === order.id ? "Hide" : "View"}
+        </button>
 
-onClick={()=>toggleOrder(order.id)}
+        <button
+            onClick={() => handleDeleteOrder(order)}
+            className="text-red-600 hover:text-red-800 hover:underline"
+        >
+            Delete
+        </button>
 
-className="text-blue-600 hover:underline"
+        {(order.status === "Dispatched" ||
+        order.status === "Delivered") && (
 
->
+            <button
+                onClick={() => navigate(`/invoice/${order.id}`)}
+                className="text-purple-600 hover:text-purple-800 hover:underline"
+            >
+                Invoice
+            </button>
 
-{
+        )}
 
-expandedOrder===order.id
-
-?
-
-"Hide"
-
-:
-
-"View"
-
-}
-
-</button>
-
-{(order.status === "Dispatched" ||
-  order.status === "Delivered") && (
-    <button
-        onClick={() => navigate(`/invoice/${order.id}`)}
-        className="text-red-600"
-    >
-        Invoice
-    </button>
-)}
-
-</div>
+    </div>
 
 </td>
 

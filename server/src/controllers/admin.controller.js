@@ -625,3 +625,65 @@ export const getMerchantDetails = async (req, res) => {
 
 };
 
+// ===========================
+// DELETE ORDER
+// ===========================
+
+export const deleteOrder = async (req, res) => {
+
+    try {
+
+        const id = Number(req.params.id);
+
+        // Check if order exists
+        const order = await prisma.order.findUnique({
+            where: {
+                id
+            }
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                message: "Order not found"
+            });
+        }
+
+        // Delete related credit note
+        await prisma.creditNote.deleteMany({
+            where: {
+                orderId: id
+            }
+        });
+
+        // Delete related order items
+        await prisma.orderItem.deleteMany({
+            where: {
+                orderId: id
+            }
+        });
+
+        // Delete the order
+        await prisma.order.delete({
+            where: {
+                id
+            }
+        });
+
+        console.log(`🗑️ Order ${id} (${order.invoice}) deleted by admin`);
+
+        res.json({
+            success: true,
+            message: "Order deleted successfully"
+        });
+
+    } catch (err) {
+
+        console.error("DELETE ORDER ERROR:", err);
+
+        res.status(500).json({
+            message: err.message
+        });
+
+    }
+
+};

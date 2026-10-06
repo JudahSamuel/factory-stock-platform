@@ -12,3 +12,7 @@ export const getOrders=(id)=>API.get(`/orders/${id}`);
 
 export const getInvoice = (id) =>
     API.get(`/orders/invoice/${id}`);
+
+export const deleteOrder = (id) => {
+    return API.delete(`/orders/${id}`);
+};

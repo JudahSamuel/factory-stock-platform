@@ -8,7 +8,8 @@ import {
     updateOrderStatus,
     updatePaymentStatus,
     updateDelivery,
-    getMerchantDetails
+    getMerchantDetails,
+    deleteOrder
 } from "../controllers/admin.controller.js";
 
 import { verifyAdmin } from "../middleware/auth.middleware.js";
@@ -29,6 +30,8 @@ router.put("/orders/:id/status", updateOrderStatus);
 router.put("/orders/:id/payment", updatePaymentStatus);
 
 router.put("/orders/:id/delivery", updateDelivery);
+
+router.delete("/orders/:id", deleteOrder);
 
 router.get("/merchants/:id", getMerchantDetails);
 

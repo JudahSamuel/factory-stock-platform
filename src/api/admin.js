@@ -90,3 +90,7 @@ export const updateDelivery = (
         `/admin/orders/${id}/delivery`,
         data
     );
+
+// Delete order
+export const deleteOrder = (id) =>
+    API.delete(`/admin/orders/${id}`);

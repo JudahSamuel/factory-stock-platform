@@ -167,3 +167,54 @@ export const getInvoice = async (req, res) => {
         });
     }
 };
+
+export const deleteOrder = async (req, res) => {
+    try {
+        const orderId = Number(req.params.id);
+
+        // Check if order exists
+        const order = await prisma.order.findUnique({
+            where: { id: orderId }
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                message: "Order not found"
+            });
+        }
+
+        // Delete related credit note first
+        await prisma.creditNote.deleteMany({
+            where: {
+                orderId: orderId
+            }
+        });
+
+        // Delete order items
+        await prisma.orderItem.deleteMany({
+            where: {
+                orderId: orderId
+            }
+        });
+
+        // Delete the order
+        await prisma.order.delete({
+            where: {
+                id: orderId
+            }
+        });
+
+        res.json({
+            message: "Order deleted successfully"
+        });
+
+    } catch (err) {
+
+        console.error("DELETE ORDER ERROR:", err);
+
+        res.status(500).json({
+            message: err.message
+        });
+
+    }
+};
