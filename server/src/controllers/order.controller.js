@@ -36,9 +36,8 @@ const todayOrderCount = await prisma.order.count({
     }
 });
 
-const invoiceNumber = String(todayOrderCount + 1).padStart(4, "0");
-
-const invoice = `${day}${month}${year}-${invoiceNumber}`;
+const invoiceNumber = String(todayOrderCount + 221).padStart(4, "0");
+const invoice = `${day}-${month}-${year}-${invoiceNumber}`;
 
 console.log("🔥 GENERATED INVOICE:", invoice);
 
