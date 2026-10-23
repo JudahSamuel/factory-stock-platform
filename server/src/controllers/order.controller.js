@@ -27,16 +27,9 @@ todayStart.setHours(0, 0, 0, 0);
 const tomorrow = new Date(todayStart);
 tomorrow.setDate(tomorrow.getDate() + 1);
 
-const todayOrderCount = await prisma.order.count({
-    where: {
-        createdAt: {
-            gte: todayStart,
-            lt: tomorrow
-        }
-    }
-});
+const totalOrderCount = await prisma.order.count();
 
-const invoiceNumber = String(todayOrderCount + 221).padStart(4, "0");
+const invoiceNumber = String(totalOrderCount + 221).padStart(4, "0");
 const invoice = `${day}-${month}-${year}-${invoiceNumber}`;
 
 console.log("🔥 GENERATED INVOICE:", invoice);
