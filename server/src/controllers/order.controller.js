@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import { allocateInvoiceNumber } from "../services/invoiceCounter.service.js";
 
 export const createOrder = async (req, res) => {
     try {
@@ -10,77 +11,74 @@ export const createOrder = async (req, res) => {
             grandTotal,
             buyer,
             shippingDetails,
-            items
+            items,
+            discountPercent = 0,
+            discountAmount = 0,
+            taxableValue = 0,
         } = req.body;
 
         console.log("Shipping Details Received:", shippingDetails);
 
-        const now = new Date();
+        // Perform atomic allocation and order creation in database transaction
+        const order = await prisma.$transaction(async (tx) => {
+            const { invoice } = await allocateInvoiceNumber(tx);
+            console.log("🔥 GENERATED INVOICE:", invoice);
 
-const day = String(now.getDate()).padStart(2, "0");
-const month = String(now.getMonth() + 1).padStart(2, "0");
-const year = now.getFullYear();
+            return await tx.order.create({
+                data: {
+                    invoice,
 
-const todayStart = new Date(now);
-todayStart.setHours(0, 0, 0, 0);
+                    merchantId: Number(merchantId),
 
-const tomorrow = new Date(todayStart);
-tomorrow.setDate(tomorrow.getDate() + 1);
+                    subtotal: Number(subtotal),
+                    gst: Number(gst),
+                    grandTotal: Number(grandTotal),
 
-const totalOrderCount = await prisma.order.count();
+                    discountPercent: Number(discountPercent || 0),
+                    discountAmount: Number(discountAmount || 0),
+                    taxableAmount: Number(taxableValue || (subtotal - (discountAmount || 0)) || 0),
 
-const invoiceNumber = String(totalOrderCount + 221).padStart(4, "0");
-const invoice = `${day}-${month}-${year}-${invoiceNumber}`;
+                    state: buyer?.merchantState || "Karnataka",
+                    placeOfSupply: buyer?.merchantPlaceOfSupply || buyer?.merchantState || "Karnataka",
 
-console.log("🔥 GENERATED INVOICE:", invoice);
+                    status: "Pending",
+                    paymentStatus: "Pending",
 
-console.log("Generated Invoice Number:", invoice);
+                    // Order Details
+                    deliveryNote: shippingDetails?.deliveryNote || "",
+                    buyersOrderNo: shippingDetails?.buyersOrderNo || "",
+                    remarks: shippingDetails?.remarks || "",
+                    supplierRef: shippingDetails?.supplierRef || "",
+                    dispatchDocumentNo: shippingDetails?.dispatchDocumentNo || "",
+                    deliveryPartner: shippingDetails?.dispatchedThrough || shippingDetails?.deliveryPartner || "",
+                    transporterName: shippingDetails?.transporterName || "",
+                    vehicleNumber: shippingDetails?.vehicleNumber || "",
+                    destination: shippingDetails?.destination || "",
+                    lrNumber: shippingDetails?.lrNumber || "",
+                    termsOfDelivery: shippingDetails?.termsOfDelivery || "",
 
-        console.log("========== ITEMS RECEIVED ==========");
-        console.log(JSON.stringify(items, null, 2));
+                    // Buyer Details
+                    shippingAddress: buyer?.merchantAddress || "",
+                    contactPerson: buyer?.merchantContactPerson || "",
+                    phone: buyer?.merchantMobile || "",
+                    gstNumber: buyer?.merchantGST || "",
 
-        const order = await prisma.order.create({
-            data: {
-                invoice,
+                    items: {
+                        create: items.map(item => ({
+                            product: item.product,
+                            hsn: item.hsn || null,
+                            quantity: Number(item.quantity),
+                            rate: Number(item.rate),
+                            gst: Number(item.gstRate ?? item.gst ?? 0),
+                            amount: Number(item.quantity) * Number(item.rate)
+                        }))
+                    }
+                },
 
-                merchantId,
-
-                subtotal,
-                gst,
-                grandTotal,
-
-                state: buyer.merchantState,
-                placeOfSupply: buyer.merchantPlaceOfSupply,
-
-                status: "Pending",
-                paymentStatus: "Pending",
-
-                // Order Details
-                deliveryNote: shippingDetails.deliveryNote,
-                buyersOrderNo: shippingDetails.buyersOrderNo,
-                remarks: shippingDetails.remarks,
-
-                // Buyer Details
-                shippingAddress: buyer.merchantAddress,
-                contactPerson: buyer.merchantContactPerson,
-                phone: buyer.merchantMobile,
-                gstNumber: buyer.merchantGST,
-
-                items: {
-                    create: items.map(item => ({
-                        product: item.product,
-                        hsn: item.hsn,
-                        quantity: item.quantity,
-                        rate: item.rate,
-                        gst: item.gstRate,
-                        amount: item.quantity * item.rate
-                    }))
+                include: {
+                    items: true
                 }
-            },
-
-            include: {
-                items: true
-            }
+            });
         });
 
         res.json(order);

@@ -5,6 +5,7 @@ import {
     getAllMerchants,
     approveMerchant,
     getAllOrders,
+    createManualOrder,
     updateOrderStatus,
     updatePaymentStatus,
     updateDelivery,
@@ -24,6 +25,8 @@ router.use(verifyAdmin);
 =========================== */
 
 router.get("/orders", getAllOrders);
+
+router.post("/orders/manual", createManualOrder);
 
 router.put("/orders/:id/status", updateOrderStatus);
 

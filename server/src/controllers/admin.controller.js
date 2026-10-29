@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import { allocateInvoiceNumber } from "../services/invoiceCounter.service.js";
 
 export const getAllOrders = async (req, res) => {
 
@@ -545,6 +546,9 @@ export const getAllMerchants = async (req, res) => {
                 email: m.email,
                 phone: m.phone,
                 gstNumber: m.gstNumber,
+                address: m.address || "",
+                state: m.state || "Karnataka",
+                contactPerson: m.contactPerson || "",
                 totalOrders: m.orders.length,
                 credit: totalCredit,
                 approved: m.approved
@@ -686,4 +690,131 @@ export const deleteOrder = async (req, res) => {
 
     }
 
+};
+
+// ===========================
+// CREATE MANUAL INVOICE / ORDER (ADMIN)
+// ===========================
+
+export const createManualOrder = async (req, res) => {
+    try {
+        const {
+            merchantId,
+            buyer = {},
+            shippingDetails = {},
+            items = [],
+            discountPercent = 0,
+            discountAmount = 0,
+            taxableValue = 0,
+            subtotal,
+            gst,
+            grandTotal,
+        } = req.body;
+
+        // 1. Validate merchant
+        const mid = Number(merchantId);
+        if (!mid) {
+            return res.status(400).json({
+                message: "Please select a registered merchant."
+            });
+        }
+
+        const merchant = await prisma.merchant.findUnique({
+            where: { id: mid }
+        });
+
+        if (!merchant) {
+            return res.status(400).json({
+                message: "Selected merchant not found in database."
+            });
+        }
+
+        // 2. Validate items
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                message: "Please add at least one product row."
+            });
+        }
+
+        for (const item of items) {
+            if (!item.product || !item.product.trim()) {
+                return res.status(400).json({
+                    message: "Product name is required for all item rows."
+                });
+            }
+            if (!item.quantity || Number(item.quantity) <= 0) {
+                return res.status(400).json({
+                    message: `Invalid quantity for product "${item.product}". Must be greater than 0.`
+                });
+            }
+        }
+
+        // 3. Atomically allocate sequential invoice number and create order in a transaction
+        const order = await prisma.$transaction(async (tx) => {
+            const { invoice } = await allocateInvoiceNumber(tx);
+            console.log("🔥 [Admin Manual Invoice] GENERATED INVOICE:", invoice);
+
+            return await tx.order.create({
+                data: {
+                    invoice,
+                    merchantId: merchant.id,
+
+                    subtotal: Number(subtotal) || 0,
+                    gst: Number(gst) || 0,
+                    grandTotal: Number(grandTotal) || 0,
+
+                    discountPercent: Number(discountPercent || 0),
+                    discountAmount: Number(discountAmount || 0),
+                    taxableAmount: Number(taxableValue || (Number(subtotal) - Number(discountAmount || 0)) || 0),
+
+                    state: buyer.merchantState || merchant.state || "Karnataka",
+                    placeOfSupply: buyer.merchantPlaceOfSupply || buyer.merchantState || merchant.state || "Karnataka",
+
+                    status: "Pending",
+                    paymentStatus: "Pending",
+
+                    // Order Details
+                    deliveryNote: shippingDetails.deliveryNote || "",
+                    buyersOrderNo: shippingDetails.buyersOrderNo || "",
+                    remarks: shippingDetails.remarks || "",
+                    supplierRef: shippingDetails.supplierRef || "",
+                    dispatchDocumentNo: shippingDetails.dispatchDocumentNo || "",
+                    deliveryPartner: shippingDetails.dispatchedThrough || shippingDetails.deliveryPartner || "",
+                    transporterName: shippingDetails.transporterName || "",
+                    vehicleNumber: shippingDetails.vehicleNumber || "",
+                    destination: shippingDetails.destination || "",
+                    lrNumber: shippingDetails.lrNumber || "",
+                    termsOfDelivery: shippingDetails.termsOfDelivery || "",
+
+                    // Buyer Details (use entered/edited details or fall back to merchant master)
+                    shippingAddress: buyer.merchantAddress || merchant.address || "",
+                    contactPerson: buyer.merchantContactPerson || merchant.contactPerson || merchant.ownerName || "",
+                    phone: buyer.merchantMobile || merchant.phone || "",
+                    gstNumber: buyer.merchantGST || merchant.gstNumber || "",
+
+                    items: {
+                        create: items.map((item) => ({
+                            product: item.product,
+                            hsn: item.hsn || null,
+                            quantity: Number(item.quantity),
+                            rate: Number(item.rate),
+                            gst: Number(item.gstRate ?? item.gst ?? 0),
+                            amount: Number(item.quantity) * Number(item.rate)
+                        }))
+                    }
+                },
+                include: {
+                    merchant: true,
+                    items: true
+                }
+            });
+        });
+
+        res.json(order);
+    } catch (err) {
+        console.error("CREATE MANUAL ORDER ERROR:", err);
+        res.status(500).json({
+            message: err.message || "Failed to create manual invoice"
+        });
+    }
 };

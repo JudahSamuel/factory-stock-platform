@@ -64,6 +64,9 @@ export const getMerchantDetails = (id) =>
 export const getAllOrders = () =>
     API.get("/admin/orders");
 
+export const createManualOrder = (data) =>
+    API.post("/admin/orders/manual", data);
+
 export const updateStatus = (
     id,
     status,

@@ -166,3 +166,10 @@ model Notification {
   createdAt   DateTime @default(now())
 
 }
+
+model InvoiceCounter {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @default("invoice")
+  lastValue Int      @default(220)
+  updatedAt DateTime @updatedAt
+}
