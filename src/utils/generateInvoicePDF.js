@@ -15,8 +15,59 @@ const HSN_MAP = {
   "Dustbin Cover Large": "3923",
 };
 
-export const generateInvoicePDF = (data) => {
+// ======================================================
+// ASYNCHRONOUS IMAGE PRELOADING
+// ======================================================
+let cachedImages = null;
+
+const loadImage = (src) => {
+  return new Promise((resolve) => {
+    if (!src || typeof Image === "undefined") {
+      resolve(src);
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      console.warn("Failed to preload image, fallback to raw src:", src);
+      resolve(src);
+    };
+    img.src = src;
+    if (img.complete && img.naturalWidth !== 0) {
+      resolve(img);
+    }
+  });
+};
+
+export const preloadInvoiceImages = async () => {
+  if (cachedImages) return cachedImages;
+  try {
+    const [loadedLogo, loadedStamp, loadedSignature] = await Promise.all([
+      loadImage(logo),
+      loadImage(stamp),
+      loadImage(signature),
+    ]);
+    cachedImages = { loadedLogo, loadedStamp, loadedSignature };
+    return cachedImages;
+  } catch (err) {
+    console.warn("Invoice image preloading error:", err);
+    return { loadedLogo: logo, loadedStamp: stamp, loadedSignature: signature };
+  }
+};
+
+// Eager preload when running in browser
+if (typeof window !== "undefined" && typeof Image !== "undefined") {
+  preloadInvoiceImages().catch(() => {});
+}
+
+export const buildInvoicePDFDoc = async (data) => {
   console.log("FULL DATA:", data);
+
+  const images = await preloadInvoiceImages();
+  const loadedLogo = images?.loadedLogo || logo;
+  const loadedStamp = images?.loadedStamp || stamp;
+  const loadedSignature = images?.loadedSignature || signature;
 
   const {
     invoiceNo,
@@ -85,16 +136,13 @@ export const generateInvoicePDF = (data) => {
     console.debug("A5 dimension check:", { SCALE_X, SCALE_Y, CONTENT_WIDTH });
   }
 
-  const stampImg = new Image();
-  stampImg.src = stamp;
-
   const isIntraState =
     merchantState?.toLowerCase().includes("karnataka");
 
   // ======================================================
   // MAXIMUM PRODUCTS PER PAGE & DYNAMIC OVERFLOW HANDLING
   // ======================================================
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 2; // Conservative limit so larger 7pt/6.5pt typography fits comfortably
 
   const itemPages = [];
   let currentPage = [];
@@ -112,12 +160,13 @@ export const generateInvoicePDF = (data) => {
     for (const it of candidate) {
       const nameLen = (it.product || "").length;
       const lines = Math.max(1, Math.ceil(nameLen / 28));
-      totalItemRowsHeight += 2.2 + lines * 2.3;
+      totalItemRowsHeight += 2.5 + lines * 2.5;
     }
 
     // Estimated vertical footprint before BANK_Y (151)
+    // Table 2 ends at ~102.5. Product header is ~5.0. Words box is ~11.5.
     const estimatedBottom =
-      93.5 + 4.5 + totalItemRowsHeight + numGstRows * 4.2 + 2 + 14;
+      102.5 + 1.5 + 5.0 + totalItemRowsHeight + numGstRows * 5.0 + 1.5 + 11.5;
 
     if (candidate.length <= ITEMS_PER_PAGE && estimatedBottom <= BANK_Y) {
       currentPage.push(item);
@@ -201,39 +250,39 @@ export const generateInvoicePDF = (data) => {
   // ======================================================
   const drawInvoiceHeader = (pageNumber, totalPages) => {
     // 3. Header title at explicit A5 positions
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text("GST TAX INVOICE", 45, 8);
 
-    doc.setFontSize(6);
+    doc.setFontSize(7);
     doc.setFont("helvetica", "italic");
     doc.text("(ORIGINAL FOR RECIPIENT)", 94, 8);
 
-    doc.setFontSize(10);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("PROFORMA INVOICE", 49, 18);
+    doc.text("PROFORMA INVOICE", 49, 17);
 
-    doc.setFontSize(6);
+    doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
     doc.text(
       isIntraState
         ? "INTRA STATE SUPPLY (CGST + SGST)"
         : "INTER STATE SUPPLY (IGST)",
       36,
-      23
+      22.5
     );
 
-    // Logo: (7, 7), dimensions 13 x 13
-    doc.addImage(logo, "JPEG", 7, 7, 13, 13);
+    // Logo: (7, 6), dimensions 17 x 17
+    doc.addImage(loadedLogo || logo, "JPEG", 7, 6, 17, 17);
 
-    // Page continuation label at (87, 23), font size 6
+    // Page continuation label at (87, 22.5), font size 7
     if (pageNumber > 1) {
-      doc.setFontSize(6);
+      doc.setFontSize(7);
       doc.setFont("helvetica", "bold");
       doc.text(
         `CONTINUED - PAGE ${pageNumber} OF ${totalPages}`,
         87,
-        23
+        22.5
       );
     }
 
@@ -241,7 +290,7 @@ export const generateInvoicePDF = (data) => {
     // 4. COMPANY DETAILS TABLE
     // ======================================================
     autoTable(doc, {
-      startY: 28,
+      startY: 25.5,
       margin: {
         left: MARGIN_LEFT,
         right: MARGIN_RIGHT,
@@ -249,8 +298,8 @@ export const generateInvoicePDF = (data) => {
       tableWidth: CONTENT_WIDTH,
       theme: "grid",
       styles: {
-        fontSize: 6,
-        cellPadding: 1,
+        fontSize: 7,
+        cellPadding: 1.3,
         lineWidth: 0.2,
         lineColor: [0, 0, 0],
         valign: "middle",
@@ -316,8 +365,8 @@ GSTIN : 29CIGPD0689G1Z4`,
       tableWidth: CONTENT_WIDTH,
       theme: "grid",
       styles: {
-        fontSize: 6,
-        cellPadding: 1,
+        fontSize: 7,
+        cellPadding: 1.3,
         lineWidth: 0.2,
         lineColor: [0, 0, 0],
         valign: "middle",
@@ -338,7 +387,7 @@ State : ${merchantState || "-"}
 Place : ${merchantPlaceOfSupply || "-"}
 Contact : ${merchantContactPerson || "-"}
 Mobile : ${merchantMobile || "-"}`,
-            rowSpan: 10,
+            rowSpan: 9,
             styles: {
               fontStyle: "bold",
             },
@@ -462,9 +511,9 @@ Mobile : ${merchantMobile || "-"}`,
       ).toFixed(2),
     ]);
 
-    // 5 & 9. Product Table with compact 2 mm gap
+    // 5 & 9. Product Table with compact 1.5 mm gap
     autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 2,
+      startY: doc.lastAutoTable.finalY + 1.5,
       margin: {
         left: MARGIN_LEFT,
         right: MARGIN_RIGHT,
@@ -485,8 +534,8 @@ Mobile : ${merchantMobile || "-"}`,
       ],
       body: productRows,
       styles: {
-        fontSize: 5.5,
-        cellPadding: 1,
+        fontSize: 6.5,
+        cellPadding: 1.2,
         halign: "center",
         valign: "middle",
         lineWidth: 0.2,
@@ -500,18 +549,18 @@ Mobile : ${merchantMobile || "-"}`,
         lineColor: [0, 0, 0],
         fontStyle: "bold",
         halign: "center",
-        fontSize: 5.5,
-        cellPadding: 1,
+        fontSize: 7,
+        cellPadding: 1.2,
       },
       columnStyles: {
-        0: { cellWidth: 8 },   // Serial number
+        0: { cellWidth: 9 },   // Serial number
         1: { cellWidth: 38 },  // Product description
-        2: { cellWidth: 13 },  // HSN/SAC
-        3: { cellWidth: 14 },  // Quantity
-        4: { cellWidth: 17 },  // Rate
-        5: { cellWidth: 10 },  // Unit
-        6: { cellWidth: 12 },  // Discount
-        7: { cellWidth: 24 },  // Amount
+        2: { cellWidth: 14 },  // HSN/SAC
+        3: { cellWidth: 15 },  // Quantity
+        4: { cellWidth: 14 },  // Rate
+        5: { cellWidth: 9 },   // Unit
+        6: { cellWidth: 11 },  // Discount
+        7: { cellWidth: 26 },  // Amount
       },
     });
 
@@ -550,24 +599,28 @@ Mobile : ${merchantMobile || "-"}`,
         content: "Total",
         styles: {
           fontStyle: "bold",
+          fontSize: 7.5,
         },
       },
       {
         content: `${calculations.totalQty}`,
         styles: {
           fontStyle: "bold",
+          fontSize: 7.5,
         },
       },
       {
         content: "Items",
         styles: {
           fontStyle: "bold",
+          fontSize: 7.5,
         },
       },
       {
         content: calculations.grandTotal.toFixed(2),
         styles: {
           fontStyle: "bold",
+          fontSize: 7.5,
         },
       },
     ]);
@@ -582,8 +635,8 @@ Mobile : ${merchantMobile || "-"}`,
       },
       tableWidth: CONTENT_WIDTH,
       styles: {
-        fontSize: 6,
-        cellPadding: 1,
+        fontSize: 7,
+        cellPadding: 1.2,
         lineWidth: 0.2,
         lineColor: [0, 0, 0],
         halign: "center",
@@ -601,23 +654,26 @@ Mobile : ${merchantMobile || "-"}`,
     // ======================================================
     // 7. AMOUNT IN WORDS BOX
     // ======================================================
-    const wordsY = doc.lastAutoTable.finalY + 2;
+    const wordsY = doc.lastAutoTable.finalY + 1.5;
+    const wordsHeight = 11.5;
 
-    doc.rect(MARGIN_LEFT, wordsY, CONTENT_WIDTH, 14);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
+    doc.rect(MARGIN_LEFT, wordsY, CONTENT_WIDTH, wordsHeight);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(6);
-    doc.text("Amount Chargeable (in words)", 9, wordsY + 4.5);
+    doc.setFontSize(7);
+    doc.text("Amount Chargeable (in words)", 9, wordsY + 4);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(5.5);
+    doc.setFontSize(6.5);
 
     const pageAmountInWords =
       "INR " +
       toWords(Math.round(calculations.grandTotal)).toUpperCase() +
       " ONLY";
 
-    doc.text(pageAmountInWords, 9, wordsY + 8.5, {
+    doc.text(pageAmountInWords, 9, wordsY + 8, {
       maxWidth: CONTENT_WIDTH - 6,
     });
 
@@ -626,61 +682,67 @@ Mobile : ${merchantMobile || "-"}`,
     // ======================================================
 
     // Bank Details (x = 76, y = 151)
-    doc.setFontSize(5.5);
+    doc.setFontSize(6.5);
     doc.setFont("helvetica", "bold");
     doc.text("Company's Bank Details", BANK_X, BANK_Y);
 
     doc.setFont("helvetica", "normal");
-    doc.text("Bank Name : Canara Bank", BANK_X, BANK_Y + 3.5);
-    doc.text("A/C No : 20071010001547", BANK_X, BANK_Y + 7);
-    doc.text("IFSC : CNRB0012007", BANK_X, BANK_Y + 10.5);
-    doc.text("Branch : TUMAKURU SIDDHARTHA", BANK_X, BANK_Y + 14);
-    doc.text("INSTITUTE OF TECHNOLOGY", BANK_X, BANK_Y + 17.5);
+    doc.text("Bank Name : Canara Bank", BANK_X, BANK_Y + 3.4);
+    doc.text("A/C No : 20071010001547", BANK_X, BANK_Y + 6.8);
+    doc.text("IFSC : CNRB0012007", BANK_X, BANK_Y + 10.2);
+    doc.text("Branch : TUMAKURU SIDDHARTHA", BANK_X, BANK_Y + 13.6);
+    doc.text("INSTITUTE OF TECHNOLOGY", BANK_X, BANK_Y + 17.0);
 
     // Declaration Box (x = 6, y = 170, w = 68, h = 24)
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
     doc.rect(MARGIN_LEFT, DECLARATION_Y, 68, 24);
 
-    doc.setFontSize(6);
+    doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
     doc.text("Company's PAN : CIGPD0689G", 8, 167);
 
-    doc.setFontSize(6);
-    doc.text("Declaration", 8, 177);
+    doc.setFontSize(7);
+    doc.text("Declaration", 8, 175.5);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(5.5);
-    doc.text("We declare that this invoice shows the actual price", 8, 182);
-    doc.text("of the goods described and that all particulars", 8, 186);
-    doc.text("are true and correct.", 8, 190);
+    doc.setFontSize(6.5);
+    doc.text("We declare that this invoice shows the actual price", 8, 180.5);
+    doc.text("of the goods described and that all particulars", 8, 185.0);
+    doc.text("are true and correct.", 8, 189.5);
 
     // Signature Box (x = 74, y = 170, w = 68, h = 24)
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
     doc.rect(74, DECLARATION_Y, 68, 24);
 
-    doc.setFontSize(6);
+    // Company name near the top of the box
+    doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.text("For LASYA ENTERPRISES", 79, 176);
+    doc.text("For LASYA ENTERPRISES", 96, 176);
 
-    // Stamp at x = 76, y = 172, w = 17, h = 17
-    doc.addImage(stampImg, "JPEG", 76, 172, 17, 17);
+    // Stamp positioned towards the left: (78, 176, 15, 15)
+    doc.addImage(loadedStamp || stamp, "JPEG", 78, 176, 15, 15);
 
-    // Signature at x = 91, y = 179, w = 22, h = 8
-    doc.addImage(signature, "PNG", 91, 179, 22, 8);
+    // Signature positioned towards the right: (96, 180, 30, 9)
+    doc.addImage(loadedSignature || signature, "PNG", 96, 180, 30, 9);
 
-    doc.setFontSize(6);
+    // Authorised Signatory label directly below the signature
+    doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.text("Authorised Signatory", 91, 191);
+    doc.text("Authorised Signatory", 96, 193);
 
     // Footer
-    doc.setFontSize(5.5);
+    doc.setFontSize(6.5);
     doc.setFont("helvetica", "italic");
-    doc.text("SUBJECT TO TUMAKURU JURISDICTION", 30, 199);
-    doc.text("This is a Computer Generated Invoice", 35, 203);
+    doc.text("SUBJECT TO TUMAKURU JURISDICTION", PAGE_WIDTH / 2, 199, { align: "center" });
+    doc.text("This is a Computer Generated Invoice", PAGE_WIDTH / 2, 203.5, { align: "center" });
 
     // Page Number on multi-page invoices
     if (totalPages > 1) {
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(5.5);
-      doc.text(`Page ${pageNumber} of ${totalPages}`, 119, 207);
+      doc.setFontSize(6.5);
+      doc.text(`Page ${pageNumber} of ${totalPages}`, 142, 207, { align: "right" });
     }
   };
 
@@ -714,8 +776,80 @@ Mobile : ${merchantMobile || "-"}`,
     );
   });
 
-  // ======================================================
-  // SAVE PDF
-  // ======================================================
+  return { doc, totalPages };
+};
+
+// ======================================================
+// DOWNLOAD / SAVE PDF
+// ======================================================
+export const generateInvoicePDF = async (data) => {
+  const { doc } = await buildInvoicePDFDoc(data);
+  const merchantName = data?.merchantName || "Merchant";
+  const invoiceNo = data?.invoiceNo || "Invoice";
   doc.save(`Invoice_${merchantName}_${invoiceNo}.pdf`);
+  return doc;
+};
+
+// ======================================================
+// GET BLOB URL FOR PREVIEW
+// ======================================================
+export const getInvoicePDFBlobUrl = async (data) => {
+  const { doc, totalPages } = await buildInvoicePDFDoc(data);
+  const blob = doc.output("blob");
+  const blobUrl = URL.createObjectURL(blob);
+  return { blobUrl, totalPages, doc };
+};
+
+// ======================================================
+// BROWSER PRINT INVOICE (A5 PORTRAIT)
+// ======================================================
+export const printInvoicePDF = async (data) => {
+  const { doc, totalPages } = await buildInvoicePDFDoc(data);
+  doc.autoPrint();
+  const blob = doc.output("blob");
+  const blobUrl = URL.createObjectURL(blob);
+
+  // If the preview iframe exists and is loaded, print directly from it
+  const previewIframe = document.getElementById("invoice-preview-iframe");
+  if (previewIframe && previewIframe.contentWindow) {
+    try {
+      previewIframe.contentWindow.focus();
+      previewIframe.contentWindow.print();
+      return { doc, totalPages, blobUrl };
+    } catch (e) {
+      console.warn("Could not print from existing preview iframe:", e);
+    }
+  }
+
+  // Fallback to hidden printing iframe
+  let printIframe = document.getElementById("pdf-print-iframe");
+  if (!printIframe) {
+    printIframe = document.createElement("iframe");
+    printIframe.id = "pdf-print-iframe";
+    printIframe.style.position = "fixed";
+    printIframe.style.top = "-9999px";
+    printIframe.style.left = "-9999px";
+    printIframe.style.width = "1px";
+    printIframe.style.height = "1px";
+    printIframe.style.opacity = "0";
+    document.body.appendChild(printIframe);
+  }
+
+  printIframe.src = blobUrl;
+  printIframe.onload = () => {
+    setTimeout(() => {
+      try {
+        printIframe.contentWindow.focus();
+        printIframe.contentWindow.print();
+      } catch (err) {
+        console.warn("Hidden iframe print failed, opening window:", err);
+        const win = window.open(blobUrl, "_blank");
+        if (win) {
+          win.focus();
+        }
+      }
+    }, 250);
+  };
+
+  return { doc, totalPages, blobUrl };
 };

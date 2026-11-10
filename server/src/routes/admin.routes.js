@@ -6,6 +6,7 @@ import {
     approveMerchant,
     getAllOrders,
     createManualOrder,
+    getNextInvoiceNumberHandler,
     updateOrderStatus,
     updatePaymentStatus,
     updateDelivery,
@@ -25,6 +26,8 @@ router.use(verifyAdmin);
 =========================== */
 
 router.get("/orders", getAllOrders);
+
+router.get("/orders/next-invoice-number", getNextInvoiceNumberHandler);
 
 router.post("/orders/manual", createManualOrder);
 

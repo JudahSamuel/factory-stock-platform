@@ -118,3 +118,51 @@ export const allocateInvoiceNumber = async (tx = prisma) => {
   };
 };
 
+/**
+ * Returns the next upcoming invoice number without incrementing or consuming the counter.
+ * Safe to call repeatedly during invoice preview.
+ */
+export const getNextInvoiceNumber = async (db = prisma) => {
+  await ensureInvoiceCounter(db);
+
+  const existing = await db.$queryRawUnsafe(`
+    SELECT "lastValue" 
+    FROM "InvoiceCounter" 
+    WHERE "name" = 'invoice' 
+    LIMIT 1;
+  `);
+
+  const existingOrders = await db.order.findMany({
+    select: { invoice: true },
+  });
+
+  let maxExisting = 0;
+  for (const o of existingOrders) {
+    if (!o.invoice) continue;
+    const match = o.invoice.match(/(\d+)$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (!isNaN(num) && num > maxExisting) {
+        maxExisting = num;
+      }
+    }
+  }
+
+  const currentLast = existing && existing.length > 0 ? Number(existing[0].lastValue) : 220;
+  const baseValue = Math.max(currentLast, maxExisting);
+  const nextSeq = baseValue + 1;
+
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = now.getFullYear();
+
+  const formattedSeq = String(nextSeq).padStart(4, "0");
+  const invoice = `${day}-${month}-${year}-${formattedSeq}`;
+
+  return {
+    sequenceNumber: nextSeq,
+    invoice,
+  };
+};
+

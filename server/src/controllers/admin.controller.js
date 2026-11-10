@@ -1,5 +1,5 @@
 import prisma from "../config/prisma.js";
-import { allocateInvoiceNumber } from "../services/invoiceCounter.service.js";
+import { allocateInvoiceNumber, getNextInvoiceNumber } from "../services/invoiceCounter.service.js";
 
 export const getAllOrders = async (req, res) => {
 
@@ -699,6 +699,7 @@ export const deleteOrder = async (req, res) => {
 export const createManualOrder = async (req, res) => {
     try {
         const {
+            orderId,
             merchantId,
             buyer = {},
             shippingDetails = {},
@@ -710,6 +711,20 @@ export const createManualOrder = async (req, res) => {
             gst,
             grandTotal,
         } = req.body;
+
+        // If order was already finalized/created, prevent duplicate number allocation and return existing order
+        if (orderId) {
+            const existingOrder = await prisma.order.findUnique({
+                where: { id: Number(orderId) },
+                include: {
+                    merchant: true,
+                    items: true,
+                },
+            });
+            if (existingOrder) {
+                return res.json(existingOrder);
+            }
+        }
 
         // 1. Validate merchant
         const mid = Number(merchantId);
@@ -815,6 +830,21 @@ export const createManualOrder = async (req, res) => {
         console.error("CREATE MANUAL ORDER ERROR:", err);
         res.status(500).json({
             message: err.message || "Failed to create manual invoice"
+        });
+    }
+};
+
+// ===========================
+// GET NEXT INVOICE NUMBER (FOR PREVIEW)
+// ===========================
+export const getNextInvoiceNumberHandler = async (req, res) => {
+    try {
+        const nextInvoice = await getNextInvoiceNumber();
+        res.json(nextInvoice);
+    } catch (err) {
+        console.error("GET NEXT INVOICE NUMBER ERROR:", err);
+        res.status(500).json({
+            message: err.message || "Failed to get next invoice number"
         });
     }
 };

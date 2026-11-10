@@ -20,7 +20,7 @@ export default function Invoice() {
 console.log("Merchant:", res.data.merchant);
 console.log("Invoice:", res.data.invoice);
 
-                generateInvoicePDF({
+                await generateInvoicePDF({
                     // Invoice Details
                     invoiceNo: order.invoice,
                     date: new Date(order.createdAt).toLocaleDateString(),
